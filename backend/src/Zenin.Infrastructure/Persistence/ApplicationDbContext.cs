@@ -16,32 +16,44 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // Configurar schema por defecto
+        modelBuilder.HasDefaultSchema("zenin_core");
+
         modelBuilder.Entity<User>(entity =>
         {
+            entity.ToTable("users", "zenin_core");
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.Email).IsUnique();
-            entity.Property(e => e.Email).HasMaxLength(255).IsRequired();
-            entity.Property(e => e.PasswordHash).IsRequired();
-            entity.Property(e => e.FirstName).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.LastName).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.Role).HasMaxLength(50).IsRequired();
-            entity.HasQueryFilter(e => !e.IsDeleted);
+            entity.HasIndex(e => e.Email);
+            entity.Property(e => e.Email).HasMaxLength(255).IsRequired().HasColumnName("email");
+            entity.Property(e => e.PasswordHash).IsRequired().HasColumnName("password_hash");
+            entity.Property(e => e.FirstName).HasMaxLength(100).HasColumnName("first_name");
+            entity.Property(e => e.LastName).HasMaxLength(100).HasColumnName("last_name");
+            entity.Property(e => e.Role).HasMaxLength(50).IsRequired().HasColumnName("role");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Ignore(e => e.IsDeleted);
+            entity.Ignore(e => e.DeletedAt);
         });
 
         modelBuilder.Entity<AuditLog>(entity =>
         {
+            entity.ToTable("audit_logs", "zenin_audit");
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.CreatedAt);
             entity.HasIndex(e => new { e.EntityType, e.EntityId });
-            entity.Property(e => e.Action).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.EntityType).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.IpAddress).HasMaxLength(45);
-            entity.Property(e => e.UserAgent).HasMaxLength(500);
+            entity.Property(e => e.Action).HasMaxLength(100).IsRequired().HasColumnName("action");
+            entity.Property(e => e.EntityType).HasMaxLength(100).IsRequired().HasColumnName("entity_type");
+            entity.Property(e => e.EntityId).HasColumnName("entity_id");
+            entity.Property(e => e.IpAddress).HasMaxLength(45).HasColumnName("ip_address");
+            entity.Property(e => e.UserAgent).HasMaxLength(500).HasColumnName("user_agent");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             
             entity.HasOne(e => e.User)
                 .WithMany(u => u.AuditLogs)
                 .HasForeignKey(e => e.UserId)
+                .HasForeignKey("user_id")
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }
