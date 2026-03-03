@@ -34,7 +34,6 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.Ignore(e => e.IsDeleted);
-            entity.Ignore(e => e.DeletedAt);
             entity.HasQueryFilter(e => e.IsActive);
         });
 
