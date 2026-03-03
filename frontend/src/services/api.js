@@ -7,6 +7,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Importante para CORS con cookies/JWT
 });
 
 api.interceptors.request.use(
