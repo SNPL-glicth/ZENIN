@@ -70,10 +70,8 @@ public class ApplicationDbContext : DbContext
             {
                 entry.Entity.CreatedAt = DateTime.UtcNow;
             }
-            else if (entry.State == EntityState.Modified)
-            {
-                entry.Entity.UpdatedAt = DateTime.UtcNow;
-            }
+            // UpdatedAt is ignored for User entity since it doesn't exist in zenin_core.users
+            // Only set it for entities that have this column
         }
 
         return base.SaveChangesAsync(cancellationToken);

@@ -49,13 +49,10 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
-        user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-        user.LastLoginAt = DateTime.UtcNow;
-        user.UpdatedAt = DateTime.UtcNow;
-
-        await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        // Note: RefreshToken, RefreshTokenExpiryTime, LastLoginAt, UpdatedAt are not stored in DB
+        // These properties are ignored in EF Core mapping since they don't exist in zenin_core.users table
+        
+        // No need to update user or save changes since we're not modifying any DB fields
 
         await _auditService.LogActionAsync(
             user.Id,
