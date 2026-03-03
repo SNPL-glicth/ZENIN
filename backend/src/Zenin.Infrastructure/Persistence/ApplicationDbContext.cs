@@ -28,10 +28,10 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.LastName).HasMaxLength(100).HasColumnName("last_name");
             entity.Property(e => e.Role).HasMaxLength(50).IsRequired().HasColumnName("role");
             entity.Property(e => e.IsActive).HasColumnName("is_active");
-            entity.Property(e => e.LastLoginAt).HasColumnName("last_login_at");
-            entity.Property(e => e.RefreshToken).HasColumnName("refresh_token");
-            entity.Property(e => e.RefreshTokenExpiryTime).HasColumnName("refresh_token_expiry_time");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Ignore(e => e.LastLoginAt);
+            entity.Ignore(e => e.RefreshToken);
+            entity.Ignore(e => e.RefreshTokenExpiryTime);
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.Ignore(e => e.IsDeleted);
             entity.HasQueryFilter(e => e.IsActive);
