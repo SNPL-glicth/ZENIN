@@ -9,6 +9,10 @@ using Zenin.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurar puerto para Railway
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -16,7 +20,8 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.File("logs/zenin-.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
-builder.Host.UseSerilog();
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -97,9 +102,11 @@ app.MapHealthChecks("/health", new HealthCheckOptions
 
 app.MapGet("/", () => new { service = "Zenin API", version = "1.0.0", status = "running" });
 
-Log.Information(" Zenin API iniciada correctamente");
-Log.Information(" Swagger UI: http://localhost:5000/swagger");
-Log.Information(" Health Check: http://localhost:5000/health");
-Log.Information(" API Base: http://localhost:5000/");
+var actualPort = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+Log.Information("🚀 Zenin API iniciada correctamente");
+Log.Information("📍 Puerto: {Port}", actualPort);
+Log.Information("📊 Swagger UI: http://localhost:{Port}/swagger", actualPort);
+Log.Information("💚 Health Check: http://localhost:{Port}/health", actualPort);
+Log.Information("🔗 API Base: http://localhost:{Port}/", actualPort);
 
 app.Run();
