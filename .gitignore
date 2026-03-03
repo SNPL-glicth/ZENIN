@@ -1,0 +1,30 @@
+# Backend
+backend/bin/
+backend/obj/
+backend/logs/
+backend/.vs/
+backend/*.user
+backend/*.suo
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.production
+
+# Environment
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
