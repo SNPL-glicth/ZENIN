@@ -44,14 +44,15 @@ const Login = () => {
 
             <div>
               <label htmlFor="email" className="block text-sm font-bold mb-2">
-                Email
+                Email or Username
               </label>
               <input
                 id="email"
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="admin or email@example.com"
                 required
               />
             </div>
