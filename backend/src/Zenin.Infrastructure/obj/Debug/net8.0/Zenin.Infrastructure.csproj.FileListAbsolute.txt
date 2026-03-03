@@ -17,3 +17,4 @@
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.pdb
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.genruntimeconfig.cache
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/ref/Zenin.Infrastructure.dll
+/home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.sourcelink.json

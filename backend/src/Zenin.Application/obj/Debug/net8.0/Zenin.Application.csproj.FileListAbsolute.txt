@@ -13,3 +13,4 @@
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Application/obj/Debug/net8.0/refint/Zenin.Application.dll
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Application/obj/Debug/net8.0/Zenin.Application.pdb
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Application/obj/Debug/net8.0/ref/Zenin.Application.dll
+/home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Application/obj/Debug/net8.0/Zenin.Application.sourcelink.json

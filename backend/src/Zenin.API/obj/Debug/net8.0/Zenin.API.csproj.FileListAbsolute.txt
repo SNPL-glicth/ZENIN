@@ -137,3 +137,4 @@
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.API/obj/Debug/net8.0/Zenin.API.pdb
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.API/obj/Debug/net8.0/Zenin.API.genruntimeconfig.cache
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.API/obj/Debug/net8.0/ref/Zenin.API.dll
+/home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.API/obj/Debug/net8.0/Zenin.API.sourcelink.json
