@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using Microsoft.Extensions.Configuration;
 using Zenin.Application.DTOs.Auth;
 using Zenin.Domain.Entities;
 using Zenin.Domain.Interfaces;
