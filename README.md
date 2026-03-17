@@ -19,7 +19,11 @@ Frontend (React)
                                     ↓
                             ML Service poller (daemon thread)
                                     ↓
-                            analysis_results (status=analyzed) + Weaviate
+                            Text sub-analyzers (sentiment, urgency, readability, structural, pattern)
+                                    ↓
+                            TextCognitiveEngine (Perceive → Analyze → Remember → Reason → Explain)
+                                    ↓
+                            analysis_results (status=analyzed) + Explanation + Weaviate
                                     ↓
                             Frontend polling GET /api/ingest/analysis/{id}
 ```
@@ -245,7 +249,7 @@ cd frontend && npm run build
 | Servicio | Dirección | Detalle |
 |----------|-----------|---------|
 | **SQL Server** | Lee/Escribe | Todas las tablas zenin_* |
-| **ML Service** (`iot_machine_learning`) | HTTP relay (query) + BD (ingesta) | Query: `/ml/query`, `/ml/semantic-search`. Ingesta: via `ingestion_queue` |
+| **ML Service** (`iot_machine_learning`) | HTTP relay (query) + BD (ingesta) | Query: `/ml/query`, `/ml/semantic-search`. Ingesta: via `ingestion_queue` → `TextCognitiveEngine` (5-phase cognitive pipeline: perceive, analyze, remember, reason, explain) |
 | **Redis** | Cache | Búsquedas semánticas (5min TTL), queries (5min), análisis (30min) |
 | **Frontend** | HTTP | Único cliente del Backend |
 
