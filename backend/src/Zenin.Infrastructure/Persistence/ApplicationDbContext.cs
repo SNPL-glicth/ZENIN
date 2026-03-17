@@ -11,6 +11,15 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Tenant> Tenants => Set<Tenant>();
+    public DbSet<Series> Series => Set<Series>();
+    public DbSet<DataPoint> DataPoints => Set<DataPoint>();
+    public DbSet<SeriesLatest> SeriesLatest => Set<SeriesLatest>();
+    public DbSet<SeriesProfile> SeriesProfiles => Set<SeriesProfile>();
+    public DbSet<Prediction> Predictions => Set<Prediction>();
+    public DbSet<Anomaly> Anomalies => Set<Anomaly>();
+    public DbSet<Pattern> Patterns => Set<Pattern>();
+    public DbSet<Document> Documents => Set<Document>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -21,6 +30,7 @@ public class ApplicationDbContext : DbContext
             entity.ToTable("users", "zenin_core");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.TenantId).HasColumnName("tenant_id");
             entity.HasIndex(e => e.Email);
             entity.Property(e => e.Email).HasMaxLength(255).IsRequired().HasColumnName("email");
             entity.Property(e => e.PasswordHash).IsRequired().HasColumnName("password_hash");
@@ -35,6 +45,7 @@ public class ApplicationDbContext : DbContext
             entity.Ignore(e => e.RefreshTokenExpiryTime);
             entity.Ignore(e => e.IsDeleted);
             entity.HasQueryFilter(e => e.IsActive);
+            entity.HasOne(e => e.Tenant).WithMany(t => t.Users).HasForeignKey(e => e.TenantId);
         });
 
         modelBuilder.Entity<AuditLog>(entity =>
@@ -57,6 +68,85 @@ public class ApplicationDbContext : DbContext
                 .WithMany(u => u.AuditLogs)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Tenant>(entity =>
+        {
+            entity.ToTable("tenants", "zenin_core");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Slug).IsRequired().HasMaxLength(255);
+            entity.HasIndex(e => e.Slug).IsUnique();
+            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+        });
+
+        modelBuilder.Entity<Series>(entity =>
+        {
+            entity.ToTable("series", "zenin_ts");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.SeriesKey).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            entity.HasIndex(e => new { e.TenantId, e.SeriesKey }).IsUnique();
+            entity.HasOne(e => e.Tenant).WithMany(t => t.Series).HasForeignKey(e => e.TenantId);
+            entity.HasOne(e => e.Latest).WithOne(l => l.Series).HasForeignKey<SeriesLatest>(l => l.SeriesId);
+            entity.HasOne(e => e.Profile).WithOne(p => p.Series).HasForeignKey<SeriesProfile>(p => p.SeriesId);
+        });
+
+        modelBuilder.Entity<DataPoint>(entity =>
+        {
+            entity.ToTable("data_points", "zenin_ts");
+            entity.HasKey(e => new { e.TenantId, e.SeriesId, e.Timestamp });
+            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            entity.HasOne(e => e.Series).WithMany(s => s.DataPoints).HasForeignKey(e => e.SeriesId);
+        });
+
+        modelBuilder.Entity<SeriesLatest>(entity =>
+        {
+            entity.ToTable("series_latest", "zenin_ts");
+            entity.HasKey(e => e.SeriesId);
+        });
+
+        modelBuilder.Entity<SeriesProfile>(entity =>
+        {
+            entity.ToTable("series_profiles", "zenin_ts");
+            entity.HasKey(e => e.SeriesId);
+        });
+
+        modelBuilder.Entity<Prediction>(entity =>
+        {
+            entity.ToTable("predictions", "zenin_ml");
+            entity.HasKey(e => new { e.TenantId, e.SeriesId, e.PredictedAt });
+            entity.Property(e => e.ExplanationJson).HasColumnType("jsonb");
+            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            entity.HasOne(e => e.Series).WithMany(s => s.Predictions).HasForeignKey(e => e.SeriesId);
+        });
+
+        modelBuilder.Entity<Anomaly>(entity =>
+        {
+            entity.ToTable("anomalies", "zenin_ml");
+            entity.HasKey(e => new { e.TenantId, e.SeriesId, e.DetectedAt });
+            entity.Property(e => e.MethodVotes).HasColumnType("jsonb");
+            entity.Property(e => e.Context).HasColumnType("jsonb");
+            entity.HasOne(e => e.Series).WithMany(s => s.Anomalies).HasForeignKey(e => e.SeriesId);
+        });
+
+        modelBuilder.Entity<Pattern>(entity =>
+        {
+            entity.ToTable("patterns", "zenin_ml");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            entity.HasOne(e => e.Series).WithMany(s => s.Patterns).HasForeignKey(e => e.SeriesId);
+
+        modelBuilder.Entity<Document>(entity =>
+        {
+            entity.ToTable("documents", "zenin_docs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.BinaryContent).HasColumnType("bytea");
+            entity.Property(e => e.NormalizedPayload).HasColumnType("jsonb");
+            entity.Property(e => e.MlResult).HasColumnType("jsonb");
+            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId);
+            entity.HasOne(e => e.Uploader).WithMany().HasForeignKey(e => e.UploadedBy);
+        });
         });
     }
 

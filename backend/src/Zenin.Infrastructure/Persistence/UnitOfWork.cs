@@ -8,16 +8,26 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
     private IDbContextTransaction? _transaction;
-    private IUserRepository? _users;
-    private IAuditLogRepository? _auditLogs;
+    private IUserRepository? _userRepository;
+    private IAuditLogRepository? _auditLogRepository;
+    private ISeriesRepository? _seriesRepository;
+    private IAnomalyRepository? _anomalyRepository;
+    private IPatternRepository? _patternRepository;
+    private IPredictionRepository? _predictionRepository;
+    private IDocumentRepository? _documentRepository;
 
     public UnitOfWork(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    public IUserRepository Users => _users ??= new UserRepository(_context);
-    public IAuditLogRepository AuditLogs => _auditLogs ??= new AuditLogRepository(_context);
+    public IUserRepository Users => _userRepository ??= new UserRepository(_context);
+    public IAuditLogRepository AuditLogs => _auditLogRepository ??= new AuditLogRepository(_context);
+    public ISeriesRepository Series => _seriesRepository ??= new SeriesRepository(_context);
+    public IAnomalyRepository Anomalies => _anomalyRepository ??= new AnomalyRepository(_context);
+    public IPatternRepository Patterns => _patternRepository ??= new PatternRepository(_context);
+    public IDocumentRepository Documents => _documentRepository ??= new DocumentRepository(_context);
+    public IPredictionRepository Predictions => _predictionRepository ??= new PredictionRepository(_context);
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

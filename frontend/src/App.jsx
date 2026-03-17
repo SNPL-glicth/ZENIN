@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 
+
 function App() {
   return (
     <AuthProvider>
@@ -44,6 +45,7 @@ function App() {
                 </Layout>
               </ProtectedRoute>
             }
+
           />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>

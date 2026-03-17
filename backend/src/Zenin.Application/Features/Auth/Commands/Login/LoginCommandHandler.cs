@@ -20,7 +20,12 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
 
     public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var user = await _unitOfWork.Users.GetByEmailAsync(request.Email.ToLowerInvariant(), cancellationToken);
+        // Aceptar username o email: si no tiene @, convertir a email
+        var emailToSearch = request.Email.Contains('@') 
+            ? request.Email.ToLowerInvariant() 
+            : $"{request.Email.ToLowerInvariant()}@zenin.local";
+        
+        var user = await _unitOfWork.Users.GetByEmailAsync(emailToSearch, cancellationToken);
         
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {

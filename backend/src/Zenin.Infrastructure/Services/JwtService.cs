@@ -30,6 +30,7 @@ public class JwtService : IJwtService
             new Claim(ClaimTypes.Role, user.Role),
             new Claim("firstName", user.FirstName),
             new Claim("lastName", user.LastName),
+            new Claim("tenant_id", user.TenantId.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
