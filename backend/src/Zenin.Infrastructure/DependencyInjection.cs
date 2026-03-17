@@ -18,7 +18,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddStackExchangeRedisCache(options =>
         {
@@ -33,6 +33,7 @@ public static class DependencyInjection
         })
         .AddJwtBearer(options =>
         {
+            options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -47,6 +48,10 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IIngestionService, IngestionService>();
+        services.AddScoped<IMLSearchService, MLSearchService>();
+        services.AddScoped<IIngestionQueueService, IngestionQueueService>();
+        services.AddSingleton<INLUService, NLUService>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<ICacheService, RedisCacheService>();

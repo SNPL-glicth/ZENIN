@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { Upload as UploadIcon, File, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import { documentsService } from '../services/documentsService';
-import { useNavigate } from 'react-router-dom';
+import { Upload as UploadIcon, File, CheckCircle, AlertCircle, Loader, BarChart3, FileText, Layers } from 'lucide-react';
+import { ingestService } from '../services/ingestService';
 
 const Upload = () => {
-  const navigate = useNavigate();
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -45,58 +43,40 @@ const Upload = () => {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
+  const [analyzing, setAnalyzing] = useState(false);
+
   const handleUpload = async () => {
     if (!selectedFile) return;
 
     setUploading(true);
+    setAnalyzing(false);
     setError(null);
     setUploadProgress(0);
 
     try {
-      const response = await documentsService.upload(selectedFile, (progress) => {
+      const response = await ingestService.upload(selectedFile, (progress) => {
         setUploadProgress(progress);
       });
-      setUploadResult(response.data);
-      setUploading(false);
-      
-      // Start polling for analysis completion
-      if (response.data.documentId) {
-        pollDocumentStatus(response.data.documentId);
+
+      const data = response.data;
+
+      if (data.status === 'pending' || data.status === 'processing') {
+        setUploading(false);
+        setAnalyzing(true);
+
+        const pollResult = await ingestService.pollForResult(data.analysisId);
+        setUploadResult(pollResult.data);
+        setAnalyzing(false);
+      } else {
+        setUploadResult(data);
+        setUploading(false);
       }
     } catch (err) {
       console.error('Upload error:', err);
-      setError(err.response?.data?.message || 'Error al subir el archivo');
+      setError(err.response?.data?.error || err.response?.data?.message || err.message || 'Error al procesar el archivo');
       setUploading(false);
+      setAnalyzing(false);
     }
-  };
-
-  const pollDocumentStatus = async (documentId) => {
-    const maxAttempts = 20;
-    let attempts = 0;
-
-    const poll = async () => {
-      try {
-        const response = await documentsService.getById(documentId);
-        const doc = response.data;
-
-        if (doc.status === 'analyzed') {
-          setUploadResult(prev => ({ ...prev, ...doc, status: 'analyzed' }));
-          return;
-        } else if (doc.status === 'error') {
-          setError(doc.errorMessage || 'Error en el análisis');
-          return;
-        }
-
-        attempts++;
-        if (attempts < maxAttempts) {
-          setTimeout(poll, 3000);
-        }
-      } catch (err) {
-        console.error('Polling error:', err);
-      }
-    };
-
-    poll();
   };
 
   const resetUpload = () => {
@@ -106,12 +86,30 @@ const Upload = () => {
     setUploadProgress(0);
   };
 
+  const classificationIcon = (cls) => {
+    switch (cls) {
+      case 'numeric': return <BarChart3 size={20} className="text-blue-600" />;
+      case 'text': return <FileText size={20} className="text-purple-600" />;
+      case 'mixed': return <Layers size={20} className="text-orange-600" />;
+      default: return <File size={20} className="text-gray-600" />;
+    }
+  };
+
+  const classificationColor = (cls) => {
+    switch (cls) {
+      case 'numeric': return 'bg-blue-100 text-blue-800';
+      case 'text': return 'bg-purple-100 text-purple-800';
+      case 'mixed': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Subir Archivo</h1>
         <p className="text-gray-600">
-          CSV, Excel, PDF, Word, JSON, imágenes, audio, logs, XML... cualquier formato
+          CSV, Excel, PDF, Word, JSON, logs... procesamiento en memoria, sin almacenar archivos crudos.
         </p>
       </div>
 
@@ -153,7 +151,7 @@ const Upload = () => {
                 {formatFileSize(selectedFile.size)}
               </p>
               
-              {!uploading && !uploadResult && (
+              {!uploading && (
                 <div className="flex gap-3 justify-center">
                   <button
                     onClick={handleUpload}
@@ -178,11 +176,26 @@ const Upload = () => {
                       style={{ width: `${uploadProgress}%` }}
                     ></div>
                   </div>
-                  <p className="text-gray-600">{uploadProgress}% completado</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader size={16} className="animate-spin" />
+                    <p className="text-gray-600">{uploadProgress}% — procesando en memoria...</p>
+                  </div>
                 </div>
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {analyzing && (
+        <div className="mt-6 bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <div className="flex items-center gap-3">
+            <Loader size={24} className="animate-spin text-black" />
+            <div>
+              <p className="text-lg font-bold">Analizando documento...</p>
+              <p className="text-gray-500 text-sm">ML Service procesando. Esto puede tardar unos segundos.</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -203,69 +216,100 @@ const Upload = () => {
       )}
 
       {uploadResult && (
-        <div className="mt-6 bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <div className="flex items-center gap-3 mb-4">
-            {uploadResult.status === 'analyzed' ? (
+        <div className="space-y-6 mt-6">
+          {/* Header */}
+          <div className="bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="flex items-center gap-3 mb-4">
               <CheckCircle size={32} className="text-green-600" />
-            ) : (
-              <Loader size={32} className="text-black animate-spin" />
-            )}
-            <h2 className="text-2xl font-bold">
-              {uploadResult.status === 'analyzed' ? 'Análisis Completado' : 'Analizando...'}
-            </h2>
+              <h2 className="text-2xl font-bold">Análisis Completado</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Archivo</p>
+                <p className="font-medium">{uploadResult.filename}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Clasificación</p>
+                <div className="flex items-center gap-2 mt-1">
+                  {classificationIcon(uploadResult.classification)}
+                  <span className={`px-2 py-1 text-sm font-bold ${classificationColor(uploadResult.classification)}`}>
+                    {uploadResult.classification?.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Estado</p>
+                <span className="px-2 py-1 text-sm font-medium bg-green-100 text-green-800">
+                  {uploadResult.status}
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-3 mb-6">
-            <p>
-              <span className="font-medium">Archivo:</span> {uploadResult.filename || selectedFile?.name}
-            </p>
-            <p>
-              <span className="font-medium">Tipo:</span>{' '}
-              <span className="bg-black text-white px-2 py-1 text-sm font-medium">
-                {uploadResult.contentType}
-              </span>
-            </p>
-            <p>
-              <span className="font-medium">Estado:</span>{' '}
-              <span
-                className={`px-2 py-1 text-sm font-medium ${
-                  uploadResult.status === 'analyzed'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}
-              >
-                {uploadResult.status}
-              </span>
-            </p>
-          </div>
-
-          {uploadResult.status === 'processing' && (
-            <p className="text-gray-600 mb-4">
-              El archivo ha sido recibido. El análisis ML está en progreso...
-            </p>
-          )}
-
-          {uploadResult.status === 'analyzed' && uploadResult.conclusion && (
-            <div className="bg-gray-50 border-2 border-gray-300 p-4 mb-6">
-              <p className="font-medium mb-2">Conclusión:</p>
-              <p className="text-gray-800">{uploadResult.conclusion}</p>
+          {/* Conclusion */}
+          {uploadResult.conclusion && (
+            <div className="bg-gray-50 border-2 border-gray-300 p-6">
+              <p className="font-bold mb-2">Conclusión</p>
+              <p className="text-gray-800 whitespace-pre-line">{uploadResult.conclusion}</p>
             </div>
           )}
 
-          <div className="flex gap-3">
-            <button
-              onClick={() => navigate(`/documents/${uploadResult.documentId}`)}
-              className="px-6 py-3 bg-black text-white font-medium hover:bg-gray-800 transition-colors"
-            >
-              Ver Resultados Completos
-            </button>
-            <button
-              onClick={resetUpload}
-              className="px-6 py-3 border-2 border-black font-medium hover:bg-gray-100 transition-colors"
-            >
-              Subir Otro Archivo
-            </button>
-          </div>
+          {/* Numeric Summary */}
+          {uploadResult.numericSummary && (
+            <div className="bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <BarChart3 size={20} /> Resumen Numérico
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                {uploadResult.numericSummary.record_count !== undefined && (
+                  <div className="text-center p-3 bg-gray-50 border">
+                    <p className="text-2xl font-bold">{uploadResult.numericSummary.record_count}</p>
+                    <p className="text-xs text-gray-500">Registros</p>
+                  </div>
+                )}
+                {uploadResult.numericSummary.numeric_columns !== undefined && (
+                  <div className="text-center p-3 bg-gray-50 border">
+                    <p className="text-2xl font-bold">{uploadResult.numericSummary.numeric_columns}</p>
+                    <p className="text-xs text-gray-500">Columnas Numéricas</p>
+                  </div>
+                )}
+                {uploadResult.numericSummary.total_columns !== undefined && (
+                  <div className="text-center p-3 bg-gray-50 border">
+                    <p className="text-2xl font-bold">{uploadResult.numericSummary.total_columns}</p>
+                    <p className="text-xs text-gray-500">Total Columnas</p>
+                  </div>
+                )}
+                {uploadResult.numericSummary.total_chunks !== undefined && (
+                  <div className="text-center p-3 bg-gray-50 border">
+                    <p className="text-2xl font-bold">{uploadResult.numericSummary.total_chunks}</p>
+                    <p className="text-xs text-gray-500">Fragmentos</p>
+                  </div>
+                )}
+              </div>
+
+              {uploadResult.numericSummary.columns && (
+                <div className="space-y-2">
+                  {Object.entries(uploadResult.numericSummary.columns).slice(0, 6).map(([col, stats]) => (
+                    <div key={col} className="flex items-center gap-4 text-sm border-b pb-2">
+                      <span className="font-medium w-32 truncate">{col}</span>
+                      <span className="text-gray-500">min: {stats.min?.toFixed(2)}</span>
+                      <span className="text-gray-500">max: {stats.max?.toFixed(2)}</span>
+                      <span className="text-gray-500">avg: {stats.mean?.toFixed(2)}</span>
+                      <span className="text-gray-500">std: {stats.stddev?.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <button
+            onClick={resetUpload}
+            className="px-6 py-3 bg-black text-white font-medium hover:bg-gray-800 transition-colors"
+          >
+            Subir Otro Archivo
+          </button>
         </div>
       )}
     </div>

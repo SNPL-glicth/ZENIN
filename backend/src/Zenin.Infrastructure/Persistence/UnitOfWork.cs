@@ -15,6 +15,7 @@ public class UnitOfWork : IUnitOfWork
     private IPatternRepository? _patternRepository;
     private IPredictionRepository? _predictionRepository;
     private IDocumentRepository? _documentRepository;
+    private IAnalysisResultRepository? _analysisResultRepository;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -28,6 +29,7 @@ public class UnitOfWork : IUnitOfWork
     public IPatternRepository Patterns => _patternRepository ??= new PatternRepository(_context);
     public IDocumentRepository Documents => _documentRepository ??= new DocumentRepository(_context);
     public IPredictionRepository Predictions => _predictionRepository ??= new PredictionRepository(_context);
+    public IAnalysisResultRepository AnalysisResults => _analysisResultRepository ??= new AnalysisResultRepository(_context);
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

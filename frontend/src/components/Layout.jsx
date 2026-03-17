@@ -7,7 +7,8 @@ import {
   Menu, 
   X,
   User,
-  Settings
+  Settings,
+  Upload
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -23,6 +24,7 @@ const Layout = ({ children }) => {
 
   const menuItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/upload', icon: Upload, label: 'Upload' },
     { path: '/profile', icon: User, label: 'Profile' },
     { path: '/settings', icon: Settings, label: 'Settings' },
   ];

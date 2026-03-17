@@ -21,6 +21,6 @@ public class Document : BaseEntity
     public string? Conclusion { get; set; }
     public DateTimeOffset UploadedAt { get; set; }
     public DateTimeOffset? AnalyzedAt { get; set; }
-    public string? WeaviateId { get; set; }
+    public string? MlDocId { get; set; }
     public string? Metadata { get; set; }
 }

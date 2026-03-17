@@ -1,7 +1,0 @@
-node_modules/
-*.log
-.git/
-.env
-.env.local
-obj/
-bin/

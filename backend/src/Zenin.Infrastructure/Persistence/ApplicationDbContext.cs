@@ -20,6 +20,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Anomaly> Anomalies => Set<Anomaly>();
     public DbSet<Pattern> Patterns => Set<Pattern>();
     public DbSet<Document> Documents => Set<Document>();
+    public DbSet<AnalysisResult> AnalysisResults => Set<AnalysisResult>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,7 +46,7 @@ public class ApplicationDbContext : DbContext
             entity.Ignore(e => e.RefreshTokenExpiryTime);
             entity.Ignore(e => e.IsDeleted);
             entity.HasQueryFilter(e => e.IsActive);
-            entity.HasOne(e => e.Tenant).WithMany(t => t.Users).HasForeignKey(e => e.TenantId);
+            entity.HasOne(e => e.Tenant).WithMany(t => t.Users).HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<AuditLog>(entity =>
@@ -76,7 +77,19 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Slug).IsRequired().HasMaxLength(255);
             entity.HasIndex(e => e.Slug).IsUnique();
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            entity.Property(e => e.Metadata).HasColumnType("nvarchar(max)");
+
+            entity.HasData(new Tenant
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                Name = "Default",
+                Slug = "default",
+                Tier = "free",
+                MaxSeries = 100,
+                MaxStorageGb = 1.0m,
+                IsActive = true,
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            });
         });
 
         modelBuilder.Entity<Series>(entity =>
@@ -84,9 +97,9 @@ public class ApplicationDbContext : DbContext
             entity.ToTable("series", "zenin_ts");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.SeriesKey).IsRequired().HasMaxLength(255);
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            entity.Property(e => e.Metadata).HasColumnType("nvarchar(max)");
             entity.HasIndex(e => new { e.TenantId, e.SeriesKey }).IsUnique();
-            entity.HasOne(e => e.Tenant).WithMany(t => t.Series).HasForeignKey(e => e.TenantId);
+            entity.HasOne(e => e.Tenant).WithMany(t => t.Series).HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(e => e.Latest).WithOne(l => l.Series).HasForeignKey<SeriesLatest>(l => l.SeriesId);
             entity.HasOne(e => e.Profile).WithOne(p => p.Series).HasForeignKey<SeriesProfile>(p => p.SeriesId);
         });
@@ -95,8 +108,8 @@ public class ApplicationDbContext : DbContext
         {
             entity.ToTable("data_points", "zenin_ts");
             entity.HasKey(e => new { e.TenantId, e.SeriesId, e.Timestamp });
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
-            entity.HasOne(e => e.Series).WithMany(s => s.DataPoints).HasForeignKey(e => e.SeriesId);
+            entity.Property(e => e.Metadata).HasColumnType("nvarchar(max)");
+            entity.HasOne(e => e.Series).WithMany(s => s.DataPoints).HasForeignKey(e => e.SeriesId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<SeriesLatest>(entity =>
@@ -115,38 +128,56 @@ public class ApplicationDbContext : DbContext
         {
             entity.ToTable("predictions", "zenin_ml");
             entity.HasKey(e => new { e.TenantId, e.SeriesId, e.PredictedAt });
-            entity.Property(e => e.ExplanationJson).HasColumnType("jsonb");
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
-            entity.HasOne(e => e.Series).WithMany(s => s.Predictions).HasForeignKey(e => e.SeriesId);
+            entity.Property(e => e.ExplanationJson).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Metadata).HasColumnType("nvarchar(max)");
+            entity.HasOne(e => e.Series).WithMany(s => s.Predictions).HasForeignKey(e => e.SeriesId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Anomaly>(entity =>
         {
             entity.ToTable("anomalies", "zenin_ml");
             entity.HasKey(e => new { e.TenantId, e.SeriesId, e.DetectedAt });
-            entity.Property(e => e.MethodVotes).HasColumnType("jsonb");
-            entity.Property(e => e.Context).HasColumnType("jsonb");
-            entity.HasOne(e => e.Series).WithMany(s => s.Anomalies).HasForeignKey(e => e.SeriesId);
+            entity.Property(e => e.MethodVotes).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Context).HasColumnType("nvarchar(max)");
+            entity.HasOne(e => e.Series).WithMany(s => s.Anomalies).HasForeignKey(e => e.SeriesId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Pattern>(entity =>
         {
             entity.ToTable("patterns", "zenin_ml");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
-            entity.HasOne(e => e.Series).WithMany(s => s.Patterns).HasForeignKey(e => e.SeriesId);
+            entity.Property(e => e.Metadata).HasColumnType("nvarchar(max)");
+            entity.HasOne(e => e.Series).WithMany(s => s.Patterns).HasForeignKey(e => e.SeriesId).OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<Document>(entity =>
         {
             entity.ToTable("documents", "zenin_docs");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.BinaryContent).HasColumnType("bytea");
-            entity.Property(e => e.NormalizedPayload).HasColumnType("jsonb");
-            entity.Property(e => e.MlResult).HasColumnType("jsonb");
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
-            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId);
-            entity.HasOne(e => e.Uploader).WithMany().HasForeignKey(e => e.UploadedBy);
+            entity.Property(e => e.BinaryContent).HasColumnType("varbinary(max)");
+            entity.Property(e => e.NormalizedPayload).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.MlResult).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Metadata).HasColumnType("nvarchar(max)");
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Uploader).WithMany().HasForeignKey(e => e.UploadedBy).OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<AnalysisResult>(entity =>
+        {
+            entity.ToTable("analysis_results", "zenin_docs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Classification).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.OriginalFilename).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.FileExtension).HasMaxLength(20);
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.MlDocId).HasColumnName("WeaviateDocId").HasMaxLength(255);
+            entity.Property(e => e.NumericSummary).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.TextSummary).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.MlResult).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Conclusion).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.ErrorMessage).HasColumnType("nvarchar(max)");
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 

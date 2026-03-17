@@ -64,7 +64,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!)
+    .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!)
     .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
 
 builder.Services.AddApplication();
@@ -72,12 +72,12 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-// Comentado temporalmente - ejecutar migraciones manualmente
-// using (var scope = app.Services.CreateScope())
-// {
-//     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//     await db.Database.MigrateAsync(); asi es
-// }
+// Auto-create/migrate database schema on startup (development)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.EnsureCreatedAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {

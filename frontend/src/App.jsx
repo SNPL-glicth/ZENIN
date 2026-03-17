@@ -5,6 +5,8 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Upload from './pages/Upload';
+import Query from './pages/Query';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 
@@ -22,6 +24,26 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/upload"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Upload />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/query"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Query />
                 </Layout>
               </ProtectedRoute>
             }

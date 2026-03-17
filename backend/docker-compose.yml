@@ -1,28 +1,14 @@
 version: '3.8'
 
-services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: zenin-postgres
-    environment:
-      POSTGRES_DB: zenin
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+# ZENIN uses the existing SQL Server container (port 1434) from the IoT stack.
+# Only Redis and the API are managed here.
 
+services:
   redis:
     image: redis:7-alpine
     container_name: zenin-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -38,7 +24,7 @@ services:
     container_name: zenin-api
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=zenin;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Server=host.docker.internal,1434;Database=zenin_db;User Id=sa;Password=Sandevistan2510;TrustServerCertificate=True
       - ConnectionStrings__Redis=redis:6379
       - Jwt__Secret=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
       - Jwt__Issuer=ZeninAPI
@@ -48,11 +34,8 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
 
 volumes:
-  postgres_data:
   redis_data:

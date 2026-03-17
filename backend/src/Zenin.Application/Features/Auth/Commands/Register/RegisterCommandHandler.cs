@@ -25,9 +25,13 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Re
             return Result<RegisterResponse>.Failure("Email already registered");
         }
 
+        // Default tenant seeded in DB via EF Core HasData
+        var defaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
         var user = new User
         {
             Id = Guid.NewGuid(),
+            TenantId = defaultTenantId,
             Email = request.Email.ToLowerInvariant(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             FirstName = request.FirstName,

@@ -9,6 +9,7 @@ public interface IUnitOfWork : IDisposable
     IPatternRepository Patterns { get; }
     IPredictionRepository Predictions { get; }
     IDocumentRepository Documents { get; }
+    IAnalysisResultRepository AnalysisResults { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);

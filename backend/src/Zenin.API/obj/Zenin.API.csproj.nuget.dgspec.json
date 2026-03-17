@@ -47,11 +47,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "AspNetCore.HealthChecks.NpgSql": {
+            "AspNetCore.HealthChecks.Redis": {
               "target": "Package",
               "version": "[8.0.0, )"
             },
-            "AspNetCore.HealthChecks.Redis": {
+            "AspNetCore.HealthChecks.SqlServer": {
               "target": "Package",
               "version": "[8.0.0, )"
             },
@@ -328,11 +328,11 @@
               "target": "Package",
               "version": "[8.0.0, )"
             },
-            "Microsoft.Extensions.Caching.StackExchangeRedis": {
+            "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
               "version": "[8.0.0, )"
             },
-            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+            "Microsoft.Extensions.Caching.StackExchangeRedis": {
               "target": "Package",
               "version": "[8.0.0, )"
             },
