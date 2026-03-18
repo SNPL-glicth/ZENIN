@@ -60,8 +60,9 @@ async function getAnalysesSummary(tenantId) {
         WHERE TenantId = @tenantId AND IsDeleted = 0
         GROUP BY Classification;
       `);
-        const summary = result.recordsets[0][0];
-        const classificationRows = result.recordsets[1];
+        const recordsets = result.recordsets;
+        const summary = recordsets[0][0];
+        const classificationRows = recordsets[1];
         const classificationBreakdown = {};
         classificationRows.forEach((row) => {
             classificationBreakdown[row.Classification] = row.count;
