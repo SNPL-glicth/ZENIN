@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zenin.Application.Features.Ingest.Commands;
+using Zenin.Application.Features.Ingest.Queries;
 using Zenin.Domain.Interfaces;
 
 namespace Zenin.API.Controllers;
@@ -82,6 +83,52 @@ public class IngestController : ControllerBase
             conclusion = result.Conclusion,
             analyzedAt = result.AnalyzedAt,
         });
+    }
+
+    /// <summary>
+    /// Get all analyses for the tenant (paginated).
+    /// </summary>
+    [HttpGet("analyses")]
+    public async Task<IActionResult> GetAnalyses([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        var tenantId = GetTenantId();
+        if (tenantId == null) return Unauthorized();
+
+        var query = new GetAnalysesQuery(tenantId.Value, page, pageSize);
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get dashboard stats for analyses.
+    /// </summary>
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats()
+    {
+        var tenantId = GetTenantId();
+        if (tenantId == null) return Unauthorized();
+
+        var query = new GetAnalysesStatsQuery(tenantId.Value);
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Delete all analyses for the tenant.
+    /// </summary>
+    [HttpDelete("analyses")]
+    public async Task<IActionResult> DeleteAllAnalyses()
+    {
+        var tenantId = GetTenantId();
+        if (tenantId == null) return Unauthorized();
+
+        var command = new DeleteAnalysesCommand(tenantId.Value);
+        var result = await _mediator.Send(command);
+
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+
+        return Ok(new { message = "All analyses deleted successfully" });
     }
 
     private Guid? GetTenantId() =>

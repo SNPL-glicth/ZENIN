@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Zenin.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4719878896de737821aebe2d9eb4386c7a13a8ff")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b136fa37285f9e6e3f6d20c85c2ac9b3ca48fb22")]
 [assembly: System.Reflection.AssemblyProductAttribute("Zenin.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Zenin.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

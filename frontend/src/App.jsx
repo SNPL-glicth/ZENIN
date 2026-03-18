@@ -4,9 +4,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Upload from './pages/Upload';
-import Query from './pages/Query';
+import DashboardNew from './pages/DashboardNew';
+import Consultar from './pages/Consultar';
+import Uploads from './pages/Uploads';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 
@@ -23,27 +23,27 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layout>
-                  <Dashboard />
+                  <DashboardNew />
                 </Layout>
               </ProtectedRoute>
             }
           />
           <Route
-            path="/upload"
+            path="/consultar"
             element={
               <ProtectedRoute>
                 <Layout>
-                  <Upload />
+                  <Consultar />
                 </Layout>
               </ProtectedRoute>
             }
           />
           <Route
-            path="/query"
+            path="/uploads"
             element={
               <ProtectedRoute>
                 <Layout>
-                  <Query />
+                  <Uploads />
                 </Layout>
               </ProtectedRoute>
             }
