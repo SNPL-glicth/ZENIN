@@ -171,6 +171,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.FileExtension).HasMaxLength(20);
             entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
             entity.Property(e => e.MlDocId).HasColumnName("WeaviateDocId").HasMaxLength(255);
+            entity.Property(e => e.SemanticName).HasMaxLength(500);
             entity.Property(e => e.NumericSummary).HasColumnType("nvarchar(max)");
             entity.Property(e => e.TextSummary).HasColumnType("nvarchar(max)");
             entity.Property(e => e.MlResult).HasColumnType("nvarchar(max)");

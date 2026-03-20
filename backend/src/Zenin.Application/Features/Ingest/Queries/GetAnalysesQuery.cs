@@ -16,6 +16,7 @@ public class AnalysisItemDto
 {
     public Guid Id { get; set; }
     public string Filename { get; set; } = string.Empty;
+    public string? SemanticName { get; set; }
     public string Classification { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string? Conclusion { get; set; }

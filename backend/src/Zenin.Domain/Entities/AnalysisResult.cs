@@ -29,6 +29,9 @@ public class AnalysisResult : BaseEntity
     /// <summary>ML Service document ID for semantic search</summary>
     public string? MlDocId { get; set; }
 
+    /// <summary>AI-generated semantic name for the document</summary>
+    public string? SemanticName { get; set; }
+
     /// <summary>pending | processing | analyzed | error</summary>
     public string Status { get; set; } = "pending";
     public string? ErrorMessage { get; set; }

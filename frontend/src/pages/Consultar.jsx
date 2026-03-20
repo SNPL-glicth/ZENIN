@@ -153,7 +153,7 @@ const Consultar = () => {
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-bold truncate">{analysis.filename}</p>
+                      <p className="font-bold truncate">{analysis.semanticName || analysis.filename}</p>
                       <span className={`px-2 py-0.5 text-xs font-bold ${classificationColor(analysis.classification)}`}>
                         {analysis.classification}
                       </span>
@@ -178,6 +178,15 @@ const Consultar = () => {
                 <div className="border-t-2 border-black p-4 bg-gray-50">
                   {analysis.status === 'analyzed' ? (
                     <div className="space-y-4">
+                      {analysis.semanticName && (
+                        <div>
+                          <p className="text-sm font-bold mb-2">Título del Documento:</p>
+                          <p className="text-sm text-gray-800 bg-white border border-gray-200 p-3">
+                            {analysis.semanticName}
+                          </p>
+                        </div>
+                      )}
+                      
                       {analysis.conclusion && (
                         <div>
                           <p className="text-sm font-bold mb-2">Conclusión:</p>

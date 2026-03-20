@@ -22,6 +22,7 @@ public class GetAnalysesQueryHandler : IRequestHandler<GetAnalysesQuery, Analyse
         {
             Id = a.Id,
             Filename = a.OriginalFilename,
+            SemanticName = a.SemanticName,
             Classification = a.Classification,
             Status = a.Status,
             Conclusion = a.Conclusion,

@@ -69,6 +69,7 @@ public class IngestController : ControllerBase
         {
             analysisId = result.Id,
             filename = result.OriginalFilename,
+            semanticName = result.SemanticName,
             classification = result.Classification,
             status = result.Status,
             numericSummary = result.NumericSummary != null
