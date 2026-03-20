@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Zenin.Application.Common;
+using Zenin.Application.Common.Models;
 using Zenin.Domain.Interfaces;
 
 namespace Zenin.Application.Features.Ingest.Commands;

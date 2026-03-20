@@ -1,4 +1,9 @@
 import sql from 'mssql';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load .env file from project root
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const config: sql.config = {
   server: process.env.DB_SERVER || 'localhost',

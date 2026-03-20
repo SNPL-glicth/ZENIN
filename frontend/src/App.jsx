@@ -4,7 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import DashboardNew from './pages/DashboardNew';
+import Dashboard from './pages/Dashboard';
 import Consultar from './pages/Consultar';
 import Uploads from './pages/Uploads';
 import Profile from './pages/Profile';
@@ -23,7 +23,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layout>
-                  <DashboardNew />
+                  <Dashboard />
                 </Layout>
               </ProtectedRoute>
             }

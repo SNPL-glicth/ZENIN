@@ -1428,6 +1428,7 @@
           "Markdig": "1.1.1",
           "MediatR": "12.2.0",
           "Microsoft.AspNetCore.Http.Features": "5.0.17",
+          "Microsoft.EntityFrameworkCore": "8.0.0",
           "Microsoft.Extensions.Http": "10.0.4",
           "PdfPig": "0.1.13",
           "SixLabors.ImageSharp": "3.1.12",

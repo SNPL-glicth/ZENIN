@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "QAE9KpmuKuw=",
+  "dgSpecHash": "5zt9LDTnLCE=",
   "success": true,
   "projectFilePath": "/home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Application/Zenin.Application.csproj",
   "expectedPackageFiles": [
@@ -16,6 +16,11 @@
     "/home/nicolas/.nuget/packages/mediatr/12.2.0/mediatr.12.2.0.nupkg.sha512",
     "/home/nicolas/.nuget/packages/mediatr.contracts/2.0.1/mediatr.contracts.2.0.1.nupkg.sha512",
     "/home/nicolas/.nuget/packages/microsoft.aspnetcore.http.features/5.0.17/microsoft.aspnetcore.http.features.5.0.17.nupkg.sha512",
+    "/home/nicolas/.nuget/packages/microsoft.entityframeworkcore/8.0.0/microsoft.entityframeworkcore.8.0.0.nupkg.sha512",
+    "/home/nicolas/.nuget/packages/microsoft.entityframeworkcore.abstractions/8.0.0/microsoft.entityframeworkcore.abstractions.8.0.0.nupkg.sha512",
+    "/home/nicolas/.nuget/packages/microsoft.entityframeworkcore.analyzers/8.0.0/microsoft.entityframeworkcore.analyzers.8.0.0.nupkg.sha512",
+    "/home/nicolas/.nuget/packages/microsoft.extensions.caching.abstractions/8.0.0/microsoft.extensions.caching.abstractions.8.0.0.nupkg.sha512",
+    "/home/nicolas/.nuget/packages/microsoft.extensions.caching.memory/8.0.0/microsoft.extensions.caching.memory.8.0.0.nupkg.sha512",
     "/home/nicolas/.nuget/packages/microsoft.extensions.configuration/10.0.4/microsoft.extensions.configuration.10.0.4.nupkg.sha512",
     "/home/nicolas/.nuget/packages/microsoft.extensions.configuration.abstractions/10.0.4/microsoft.extensions.configuration.abstractions.10.0.4.nupkg.sha512",
     "/home/nicolas/.nuget/packages/microsoft.extensions.configuration.binder/10.0.4/microsoft.extensions.configuration.binder.10.0.4.nupkg.sha512",

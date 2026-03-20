@@ -8,12 +8,17 @@ exports.getConnection = getConnection;
 exports.closeConnection = closeConnection;
 const mssql_1 = __importDefault(require("mssql"));
 exports.sql = mssql_1.default;
+const dotenv_1 = __importDefault(require("dotenv"));
+const path_1 = __importDefault(require("path"));
+// Load .env file from project root
+dotenv_1.default.config({ path: path_1.default.join(__dirname, '../../.env') });
 const config = {
     server: process.env.DB_SERVER || 'localhost',
     port: parseInt(process.env.DB_PORT || '1434'),
     database: process.env.DB_DATABASE || 'zenin_db',
     user: process.env.DB_USER || 'sa',
     password: process.env.DB_PASSWORD || '',
+    domain: '',
     options: {
         encrypt: process.env.DB_ENCRYPT === 'true',
         trustServerCertificate: process.env.DB_TRUST_SERVER_CERTIFICATE === 'true',

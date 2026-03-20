@@ -1,5 +1,5 @@
 using MediatR;
-using Zenin.Application.Common;
+using Zenin.Application.Common.Models;
 
 namespace Zenin.Application.Features.Ingest.Commands;
 
