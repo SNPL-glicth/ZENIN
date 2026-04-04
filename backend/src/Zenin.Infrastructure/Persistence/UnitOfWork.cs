@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Configuration;
 using Zenin.Domain.Interfaces;
 using Zenin.Infrastructure.Persistence.Repositories;
 
@@ -7,29 +8,38 @@ namespace Zenin.Infrastructure.Persistence;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
+    private readonly IConfiguration _configuration;
     private IDbContextTransaction? _transaction;
     private IUserRepository? _userRepository;
     private IAuditLogRepository? _auditLogRepository;
     private ISeriesRepository? _seriesRepository;
     private IAnomalyRepository? _anomalyRepository;
     private IPatternRepository? _patternRepository;
-    private IPredictionRepository? _predictionRepository;
     private IDocumentRepository? _documentRepository;
     private IAnalysisResultRepository? _analysisResultRepository;
+    private PredictionRepository? _predictionRepository;
+    private MLHealthRepository? _mlHealthRepository;
 
-    public UnitOfWork(ApplicationDbContext context)
+    public UnitOfWork(ApplicationDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     public IUserRepository Users => _userRepository ??= new UserRepository(_context);
     public IAuditLogRepository AuditLogs => _auditLogRepository ??= new AuditLogRepository(_context);
     public ISeriesRepository Series => _seriesRepository ??= new SeriesRepository(_context);
-    public IAnomalyRepository Anomalies => _anomalyRepository ??= new AnomalyRepository(_context);
     public IPatternRepository Patterns => _patternRepository ??= new PatternRepository(_context);
     public IDocumentRepository Documents => _documentRepository ??= new DocumentRepository(_context);
-    public IPredictionRepository Predictions => _predictionRepository ??= new PredictionRepository(_context);
     public IAnalysisResultRepository AnalysisResults => _analysisResultRepository ??= new AnalysisResultRepository(_context);
+    
+    // New repositories using IConfiguration
+    public PredictionRepository Predictions => _predictionRepository ??= new PredictionRepository(_configuration);
+    public MLHealthRepository MLHealth => _mlHealthRepository ??= new MLHealthRepository(_configuration);
+
+    // Legacy interface implementations throwing NotImplementedException
+    IAnomalyRepository IUnitOfWork.Anomalies => throw new NotImplementedException("Use Predictions repository directly");
+    IPredictionRepository IUnitOfWork.Predictions => throw new NotImplementedException("Use Predictions repository directly");
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

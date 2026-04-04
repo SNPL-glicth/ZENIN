@@ -34,6 +34,8 @@ public class IngestionQueueService : IIngestionQueueService
         string? metadataJson,
         CancellationToken ct = default)
     {
+        _logger.LogInformation("[QUEUE] Iniciando EnqueueAsync para queueId={queueId}", queueId);
+        
         const string sql = @"
             INSERT INTO zenin_docs.ingestion_queue
                 (Id, TenantId, UserId, ContentType, SourceType,
@@ -44,24 +46,33 @@ public class IngestionQueueService : IIngestionQueueService
                  {5}, {6}, {7}, {8},
                  'pending', GETUTCDATE())";
 
-        await _dbContext.Database.ExecuteSqlRawAsync(
-            sql,
-            new object[]
-            {
-                queueId,
-                tenantId,
-                userId,
-                contentType,
-                sourceType,
-                (object?)originalFilename ?? DBNull.Value,
-                (object?)fileExtension ?? DBNull.Value,
-                content,
-                (object?)metadataJson ?? DBNull.Value,
-            },
-            ct);
+        try
+        {
+            await _dbContext.Database.ExecuteSqlRawAsync(
+                sql,
+                new object[]
+                {
+                    queueId,
+                    tenantId,
+                    userId,
+                    contentType,
+                    sourceType,
+                    (object?)originalFilename ?? DBNull.Value,
+                    (object?)fileExtension ?? DBNull.Value,
+                    content,
+                    (object?)metadataJson ?? DBNull.Value,
+                },
+                ct);
 
-        _logger.LogInformation(
-            "Enqueued {QueueId} for ML processing (type={ContentType}, file={Filename})",
-            queueId, contentType, originalFilename);
+            _logger.LogInformation(
+                "Enqueued {QueueId} for ML processing (type={ContentType}, file={Filename})",
+                queueId, contentType, originalFilename);
+            _logger.LogInformation("[QUEUE] INSERT exitoso en zenin_docs.ingestion_queue: {queueId}", queueId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[QUEUE] Error al encolar queueId={queueId}: {Message}", queueId, ex.Message);
+            throw;
+        }
     }
 }

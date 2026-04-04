@@ -48,6 +48,9 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<PredictionRepository>();
+        services.AddScoped<AnomalyRepository>();
+        services.AddScoped<MLHealthRepository>();
         services.AddScoped<IIngestionService, IngestionService>();
         services.AddScoped<IMLSearchService, MLSearchService>();
         services.AddScoped<IIngestionQueueService, IngestionQueueService>();

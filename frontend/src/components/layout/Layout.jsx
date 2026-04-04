@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { 
   LayoutDashboard, 
   LogOut, 
@@ -9,7 +9,10 @@ import {
   User,
   Settings,
   Upload,
-  Search
+  Search,
+  Brain,
+  AlertTriangle,
+  Activity
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -27,6 +30,9 @@ const Layout = ({ children }) => {
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/consultar', icon: Search, label: 'Consultar' },
     { path: '/uploads', icon: Upload, label: 'Uploads' },
+    { path: '/predictions', icon: Brain, label: 'ML Predictions' },
+    { path: '/anomalies', icon: AlertTriangle, label: 'Anomalías' },
+    { path: '/explainability', icon: Activity, label: 'Explainability' },
     { path: '/profile', icon: User, label: 'Profile' },
     { path: '/settings', icon: Settings, label: 'Settings' },
   ];

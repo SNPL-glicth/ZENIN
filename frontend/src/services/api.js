@@ -10,6 +10,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // Importante para CORS con cookies/JWT
+  timeout: 60000, // 60 seconds for long-running ML analysis
 });
 
 api.interceptors.request.use(
@@ -17,6 +18,11 @@ api.interceptors.request.use(
     const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    // Si es FormData, eliminar Content-Type para que el browser lo establezca con boundary
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+      console.log('[api.interceptor] FormData detectado, Content-Type eliminado. Headers:', config.headers);
     }
     return config;
   },

@@ -34,6 +34,8 @@ public class IngestFileCommandHandler : IRequestHandler<IngestFileCommand, Resul
 
     public async Task<Result<IngestFileResponse>> Handle(IngestFileCommand request, CancellationToken ct)
     {
+        _logger.LogInformation("[INGEST] Iniciando upload: {filename}", request.File.FileName);
+        
         var analysisId = Guid.NewGuid();
         var queueId = Guid.NewGuid();
         var extension = Path.GetExtension(request.File.FileName);
@@ -68,6 +70,7 @@ public class IngestFileCommandHandler : IRequestHandler<IngestFileCommand, Resul
             // 3. Save analysis_results (pending) — ML will UPDATE this row
             await _unitOfWork.AnalysisResults.AddAsync(analysisResult, ct);
             await _unitOfWork.SaveChangesAsync(ct);
+            _logger.LogInformation("[INGEST] AnalysisResult creado: {id}", analysisResult.Id);
 
             // 4. Determine content for queue: text or serialized numeric data
             var content = !string.IsNullOrWhiteSpace(ingestionResult.ExtractedText)
@@ -86,6 +89,7 @@ public class IngestFileCommandHandler : IRequestHandler<IngestFileCommand, Resul
             });
 
             // 5. Write to ingestion_queue — ML poller picks this up
+            _logger.LogInformation("[INGEST] Encolando en ingestion_queue...");
             await _queue.EnqueueAsync(
                 queueId: queueId,
                 tenantId: request.TenantId,
@@ -101,6 +105,7 @@ public class IngestFileCommandHandler : IRequestHandler<IngestFileCommand, Resul
             _logger.LogInformation(
                 "Enqueued {File}: classification={Class}, queueId={QueueId}, analysisId={AnalysisId}",
                 request.File.FileName, ingestionResult.Classification, queueId, analysisId);
+            _logger.LogInformation("[INGEST] Encolado exitosamente: queueId={queueId}", queueId);
 
             // 6. Return immediately — frontend polls for result
             return Result<IngestFileResponse>.Success(new IngestFileResponse
@@ -115,6 +120,7 @@ public class IngestFileCommandHandler : IRequestHandler<IngestFileCommand, Resul
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "[INGEST] Excepción en Handle: {Message}", ex.Message);
             _logger.LogError(ex, "Ingestion failed for {File}", request.File.FileName);
 
             analysisResult.Status = "error";

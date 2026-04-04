@@ -2,10 +2,11 @@ import api from './api';
 
 export const ingestService = {
   upload: (file, onProgress) => {
+    console.log('[ingestService.upload] Recibiendo file:', file?.name, 'size:', file?.size, 'type:', file?.type);
     const formData = new FormData();
     formData.append('file', file);
+    console.log('[ingestService.upload] FormData creado, llamando api.post...');
     return api.post('/ingest/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: (e) => {
         const pct = Math.round((e.loaded * 100) / e.total);
         onProgress?.(pct);

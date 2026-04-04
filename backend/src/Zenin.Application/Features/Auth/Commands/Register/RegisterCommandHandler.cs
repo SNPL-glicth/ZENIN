@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Zenin.Application.Common.Interfaces;
 using Zenin.Application.Common.Models;
 using Zenin.Domain.Entities;
@@ -10,18 +11,23 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Re
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditService _auditService;
+    private readonly ILogger<RegisterCommandHandler> _logger;
 
-    public RegisterCommandHandler(IUnitOfWork unitOfWork, IAuditService auditService)
+    public RegisterCommandHandler(IUnitOfWork unitOfWork, IAuditService auditService, ILogger<RegisterCommandHandler> logger)
     {
         _unitOfWork = unitOfWork;
         _auditService = auditService;
+        _logger = logger;
     }
 
     public async Task<Result<RegisterResponse>> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("[AUTH-HANDLER] Register iniciado: email={email}", request.Email);
+        
         var existingUser = await _unitOfWork.Users.GetByEmailAsync(request.Email, cancellationToken);
         if (existingUser != null)
         {
+            _logger.LogWarning("[AUTH-HANDLER] Register rechazado: email={email} ya existe", request.Email);
             return Result<RegisterResponse>.Failure("Email already registered");
         }
 
@@ -43,6 +49,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Re
 
         await _unitOfWork.Users.AddAsync(user, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        _logger.LogInformation("[AUTH-HANDLER] Usuario creado: userId={userId}, email={email}", user.Id, user.Email);
 
         await _auditService.LogActionAsync(
             user.Id,
@@ -53,6 +61,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Re
             $"Email: {user.Email}",
             cancellationToken: cancellationToken
         );
+        
+        _logger.LogInformation("[AUTH-HANDLER] Register completado: userId={userId}", user.Id);
 
         return Result<RegisterResponse>.Success(new RegisterResponse(
             user.Id,

@@ -2,6 +2,7 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Serilog.Events;
 using Zenin.API.Middleware;
 using Zenin.Application;
 using Zenin.Infrastructure;
@@ -14,14 +15,23 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("System", LogEventLevel.Warning)
     .Enrich.FromLogContext()
-    .WriteTo.Console()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext} - {Message:lj}{NewLine}{Exception}")
     .WriteTo.File("logs/zenin-.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
-builder.Host.UseSerilog((context, configuration) =>
-    configuration.ReadFrom.Configuration(context.Configuration));
+builder.Host.UseSerilog();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+// Test logging immediately
+var testLogger = Log.ForContext<Program>();
+testLogger.Information("[PROGRAM] Serilog initialized successfully - logs should appear now");
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

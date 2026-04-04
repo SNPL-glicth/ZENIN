@@ -1,6 +1,8 @@
 import api from './api';
 
 export const metricsService = {
+  getOverview: () => api.get('/dashboard/overview'),
+  
   getSummary: () => api.get('/metrics/summary'),
   
   getChartData: (type, from = null, to = null) => {

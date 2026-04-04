@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, MessageSquare, FileText, Database, Loader } from 'lucide-react';
 import { queryService } from '../services/queryService';
+import { Card, ErrorFallback } from '../components/ui';
 
 const Query = () => {
   const [question, setQuestion] = useState('');
@@ -87,13 +88,13 @@ const Query = () => {
       )}
 
       {error && (
-        <div className="mb-6 bg-white border-2 border-red-500 p-6 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
-          <p className="text-red-600 font-medium">{error}</p>
+        <div className="mb-6">
+          <ErrorFallback error={error} retry={() => setError(null)} />
         </div>
       )}
 
       {result && (
-        <div className="mb-8 bg-white border-2 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+        <Card className="mb-8">
           <div className="flex items-start gap-3 mb-4">
             <MessageSquare size={24} className="text-black mt-1 flex-shrink-0" />
             <div>
@@ -127,11 +128,11 @@ const Query = () => {
               </div>
             </div>
           )}
-        </div>
+        </Card>
       )}
 
       {history.length > 1 && (
-        <div>
+        <Card shadow={false}>
           <h2 className="text-xl font-bold mb-4">Historial</h2>
           <div className="space-y-4">
             {history.slice(1).map((item, i) => (
@@ -145,7 +146,7 @@ const Query = () => {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

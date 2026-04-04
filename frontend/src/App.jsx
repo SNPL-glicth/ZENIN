@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import Layout from './components/Layout';
+import { ProtectedRoute } from './components/auth';
+import { Layout } from './components/layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -9,6 +9,11 @@ import Consultar from './pages/Consultar';
 import Uploads from './pages/Uploads';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import Query from './pages/Query';
+import Documents from './pages/Documents';
+import Predictions from './pages/Predictions';
+import Anomalies from './pages/Anomalies';
+import Explainability from './pages/Explainability';
 
 
 function App() {
@@ -67,7 +72,56 @@ function App() {
                 </Layout>
               </ProtectedRoute>
             }
-
+          />
+          <Route
+            path="/query"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Query />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/documents"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Documents />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/predictions"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Predictions />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/anomalies"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Anomalies />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/explainability"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Explainability />
+                </Layout>
+              </ProtectedRoute>
+            }
           />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>

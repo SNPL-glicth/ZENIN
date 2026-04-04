@@ -158,6 +158,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.NormalizedPayload).HasColumnType("nvarchar(max)");
             entity.Property(e => e.MlResult).HasColumnType("nvarchar(max)");
             entity.Property(e => e.Metadata).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.MlDocId).HasColumnName("WeaviateId").HasMaxLength(255);
             entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(e => e.Uploader).WithMany().HasForeignKey(e => e.UploadedBy).OnDelete(DeleteBehavior.Restrict);
         });

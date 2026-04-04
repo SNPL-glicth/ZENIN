@@ -23,4 +23,5 @@ public class AnalysisItemDto
     public DateTime CreatedAt { get; set; }
     public DateTime? AnalyzedAt { get; set; }
     public long FileSizeBytes { get; set; }
+    public object? DecisionRecommendation { get; set; }
 }
