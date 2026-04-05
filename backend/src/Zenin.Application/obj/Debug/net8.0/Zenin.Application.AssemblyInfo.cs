@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Zenin.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+52ae0e16607f485d13863eb22d6320778b2b1905")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7db884e79e1e34a7011e9183bba34f09a774a3f0")]
 [assembly: System.Reflection.AssemblyProductAttribute("Zenin.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Zenin.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
