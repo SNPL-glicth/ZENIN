@@ -49,6 +49,20 @@ export interface Prediction {
   seriesId: string;
   predictedValue: number;
   timestamp: string;
+  confidence: number;
+  trend?: string;
+  selectedEngine?: string;
+  riskLevel?: string;
+  severity?: string;
+  explanation?: string;
+  explanationJson?: string;
+  metadata?: object;
+  regime?: string;
+  isAnomaly?: boolean;
+  anomalyScore?: number;
+  predictedAt?: string;
+  targetTimestamp?: string;
+  horizonMinutes?: number;
   [key: string]: unknown;
 }
 
@@ -58,6 +72,12 @@ export interface Anomaly {
   seriesId: string;
   severity: 'critical' | 'warning' | 'info';
   timestamp: string;
+  detectedAt?: string;
+  anomalyScore?: number;
+  anomalyConfidence?: number;
+  methodVotes?: Record<string, number>;
+  explanation?: string;
+  auditTraceId?: string;
   [key: string]: unknown;
 }
 

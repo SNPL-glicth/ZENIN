@@ -18,7 +18,6 @@ const config = {
     database: process.env.DB_DATABASE || 'zenin_db',
     user: process.env.DB_USER || 'sa',
     password: process.env.DB_PASSWORD || '',
-    domain: '',
     options: {
         encrypt: process.env.DB_ENCRYPT === 'true',
         trustServerCertificate: process.env.DB_TRUST_SERVER_CERTIFICATE === 'true',

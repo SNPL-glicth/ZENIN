@@ -4,13 +4,8 @@ import { useAsyncData } from '../hooks/useAsyncData';
 import { predictionService } from '../services/predictionService';
 import { Card, LoadingSpinner, ErrorFallback } from '../components/ui';
 import { AnomalyCard } from '../components/sections';
+import type { Anomaly } from '../types/services';
 
-interface Anomaly {
-  id: string;
-  seriesId: string;
-  severity: 'CRITICAL' | 'WARNING' | string;
-  detectedAt: string;
-}
 
 const Anomalies = (): React.ReactElement => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -21,7 +16,7 @@ const Anomalies = (): React.ReactElement => {
     loading,
     error,
     refetch
-  } = useAsyncData<Anomaly[]>(() => predictionService.getAnomalies().then(r => r.data.anomalies));
+  } = useAsyncData<Anomaly[]>(() => predictionService.getAnomalies().then(r => r.data.anomalies || []));
 
   const filteredAnomalies = anomalies?.filter(a => {
     if (filter === 'critical') return a.severity === 'CRITICAL';
@@ -96,6 +91,54 @@ const Anomalies = (): React.ReactElement => {
               onToggle={setExpandedId}
             />
           ))}
+        </div>
+      )}
+
+      {/* Sección de Explicaciones Cognitivas */}
+      {anomalies && anomalies.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4">Razonamiento ML (Cognitive Trace)</h2>
+          <div className="space-y-4">
+            {anomalies.slice(0, 3).map((anomaly) => (
+              <Card key={`trace-${anomaly.id}`} className="p-4 bg-gray-50">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-bold">{anomaly.seriesId}</span>
+                  <span className="text-sm text-gray-500">• {anomaly.detectedAt || anomaly.timestamp}</span>
+                </div>
+                {anomaly.explanation ? (
+                  <div className="bg-yellow-50 border border-yellow-200 p-3 rounded mb-2">
+                    <p className="text-sm font-medium text-yellow-800">{anomaly.explanation}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Sin explicación disponible</p>
+                )}
+                {anomaly.methodVotes && (
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-600 mb-1">Métodos de votación:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(anomaly.methodVotes).map(([method, vote]) => (
+                        <span key={method} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                          {method}: {vote.toFixed(3)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {anomaly.anomalyScore !== undefined && (
+                  <div className="mt-2 text-sm">
+                    <span className="text-gray-600">Score: </span>
+                    <span className="font-medium">{anomaly.anomalyScore.toFixed(4)}</span>
+                    {anomaly.anomalyConfidence !== undefined && (
+                      <span className="ml-3">
+                        <span className="text-gray-600">Confianza: </span>
+                        <span className="font-medium">{(anomaly.anomalyConfidence * 100).toFixed(1)}%</span>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
         </div>
       )}
     </div>

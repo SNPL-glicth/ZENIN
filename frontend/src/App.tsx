@@ -13,6 +13,7 @@ import Documents from './pages/Documents';
 import Predictions from './pages/Predictions';
 import Anomalies from './pages/Anomalies';
 import Explainability from './pages/Explainability';
+import CognitiveTrace from './pages/CognitiveTrace';
 
 const App = (): React.ReactElement => {
   return (
@@ -99,6 +100,16 @@ const App = (): React.ReactElement => {
               <ProtectedRoute>
                 <Layout>
                   <Anomalies />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cognitive-trace"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CognitiveTrace />
                 </Layout>
               </ProtectedRoute>
             }

@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Brain,
   AlertTriangle,
+  Network,
   LucideIcon
 } from 'lucide-react';
 
@@ -70,6 +71,7 @@ const Layout = ({ children }: LayoutProps): React.ReactElement => {
   const menuItems: MenuItem[] = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/chat', icon: MessageSquare, label: 'Chat' },
+    { path: '/cognitive-trace', icon: Network, label: 'Cognitive Trace' },
     { path: '/predictions', icon: Brain, label: 'ML Predictions' },
     { path: '/anomalies', icon: AlertTriangle, label: 'Anomalías' },
     { path: '/profile', icon: User, label: 'Profile' },

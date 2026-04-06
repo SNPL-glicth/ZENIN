@@ -7,7 +7,7 @@ import {
   RecentActivity 
 } from '../types/services';
 
-export type ChartType = 'predictions' | 'anomalies' | 'accuracy' | 'latency';
+export type ChartType = 'predictions' | 'anomalies' | 'accuracy' | 'latency' | 'analysis_count' | 'upload_volume';
 
 export const metricsService = {
   getOverview: (): Promise<AxiosResponse<DashboardOverview>> =>

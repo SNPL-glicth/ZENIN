@@ -31,6 +31,8 @@ public class PredictionRepository
                 p.EngineName,
                 p.RiskLevel,
                 p.Explanation,
+                p.ExplanationJson,
+                p.Metadata,
                 p.IsAnomaly,
                 p.AnomalyScore,
                 p.PredictedAt,
@@ -69,6 +71,8 @@ public class PredictionRepository
                 p.EngineName,
                 p.RiskLevel,
                 p.Explanation,
+                p.ExplanationJson,
+                p.Metadata,
                 p.IsAnomaly,
                 p.AnomalyScore,
                 p.PredictedAt,
@@ -109,6 +113,28 @@ public class PredictionRepository
 
     private static PredictionDto MapReaderToDto(SqlDataReader reader)
     {
+        var metadataJson = reader.IsDBNull(9) ? null : reader.GetString(9);
+        var regime = "unknown";
+        
+        // Extraer regime del Metadata JSON si existe
+        if (!string.IsNullOrEmpty(metadataJson))
+        {
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(metadataJson);
+                if (doc.RootElement.TryGetProperty("regime", out var regimeElement))
+                {
+                    regime = regimeElement.GetString() ?? "unknown";
+                }
+                else if (doc.RootElement.TryGetProperty("signal_profile", out var signalProfile) &&
+                         signalProfile.TryGetProperty("regime", out var spRegime))
+                {
+                    regime = spRegime.GetString() ?? "unknown";
+                }
+            }
+            catch { /* Si falla el parseo, dejamos "unknown" */ }
+        }
+        
         return new PredictionDto
         {
             Id = reader.GetGuid(0).GetHashCode(),
@@ -119,10 +145,13 @@ public class PredictionRepository
             SelectedEngine = reader.IsDBNull(5) ? "" : reader.GetString(5),
             RiskLevel = reader.IsDBNull(6) ? "NONE" : reader.GetString(6),
             Explanation = reader.IsDBNull(7) ? null : reader.GetString(7),
-            IsAnomaly = reader.GetBoolean(8),
-            AnomalyScore = reader.IsDBNull(9) ? 0 : reader.GetDecimal(9),
-            PredictedAt = reader.GetDateTime(10),
-            TargetTimestamp = reader.IsDBNull(11) ? null : reader.GetDateTime(11)
+            ExplanationJson = reader.IsDBNull(8) ? null : reader.GetString(8),
+            Metadata = metadataJson,
+            IsAnomaly = reader.GetBoolean(10),
+            AnomalyScore = reader.IsDBNull(11) ? 0 : reader.GetDecimal(11),
+            PredictedAt = reader.GetDateTime(12),
+            TargetTimestamp = reader.IsDBNull(13) ? null : reader.GetDateTime(13),
+            Regime = regime
         };
     }
 }

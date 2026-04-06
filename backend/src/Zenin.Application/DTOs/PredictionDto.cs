@@ -11,6 +11,9 @@ public class PredictionDto
     public string RiskLevel { get; set; } = "NONE";
     public string Severity { get; set; } = "info";
     public string? Explanation { get; set; }
+    public string? ExplanationJson { get; set; }
+    public string? Metadata { get; set; }
+    public string Regime { get; set; } = "unknown";
     public bool IsAnomaly { get; set; }
     public decimal AnomalyScore { get; set; }
     public DateTime PredictedAt { get; set; }

@@ -3,6 +3,7 @@ import { TrendingUp, FileText, Activity, Calendar, BarChart3, Clock, LucideIcon 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { metricsService } from '../services/metricsService';
+import type { MetricsSummary, RecentActivity } from '../types/services';
 import { Card, LoadingSpinner, ErrorFallback, StatusBadge } from '../components/ui';
 import { MLStatus } from '../components/sections';
 import { formatDate } from '../utils/formatters';
@@ -46,25 +47,11 @@ const SimpleBarChart = ({ data, title, icon: Icon, color = "#000" }: SimpleBarCh
   </Card>
 );
 
-interface ActivityItem {
-  id: string;
-  filename: string;
-  classification: string;
-  status: string;
-  createdAt: string;
-  processingTimeSeconds?: number;
-}
-
 interface DashboardData {
-  summary: {
-    totalAnalyses: number;
-    totalFiles: number;
-    analysesToday: number;
-    completionRatePercent: number;
-  };
+  summary: MetricsSummary;
   analysisChart: ChartDataPoint[];
   uploadChart: ChartDataPoint[];
-  recentActivity: ActivityItem[];
+  recentActivity: RecentActivity[];
 }
 
 const Dashboard = (): React.ReactElement => {
@@ -83,17 +70,17 @@ const Dashboard = (): React.ReactElement => {
       metricsService.getRecentActivity(5),
     ]);
 
-    const formatChartData = (dataPoints: { timestamp: string; value: number }[]) =>
-      dataPoints?.slice(-10).map(p => ({
-        date: new Date(p.timestamp).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }),
-        value: p.value
+    const formatChartData = (chartData: { labels: string[]; data: number[] }) =>
+      chartData?.labels?.map((label, index) => ({
+        date: label,
+        value: chartData.data[index] || 0
       })) || [];
 
     return {
       summary: summaryRes.data,
-      analysisChart: formatChartData(analysisChartRes.data?.dataPoints),
-      uploadChart: formatChartData(uploadChartRes.data?.dataPoints),
-      recentActivity: activityRes.data?.recentAnalyses || []
+      analysisChart: formatChartData(analysisChartRes.data),
+      uploadChart: formatChartData(uploadChartRes.data),
+      recentActivity: activityRes.data || []
     };
   });
 
@@ -112,10 +99,10 @@ const Dashboard = (): React.ReactElement => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={TrendingUp} value={summary?.totalAnalyses || 0} label="Análisis Completados" />
-        <StatCard icon={FileText} value={summary?.totalFiles || 0} label="Archivos Subidos" />
-        <StatCard icon={Calendar} value={summary?.analysesToday || 0} label="Análisis Hoy" />
-        <StatCard icon={Activity} value={summary?.completionRatePercent ? `${Math.round(summary.completionRatePercent)}%` : 'N/A'} label="Tasa de Completitud" />
+        <StatCard icon={TrendingUp} value={summary?.predictions || 0} label="Análisis Completados" />
+        <StatCard icon={FileText} value={summary?.anomalies || 0} label="Archivos Subidos" />
+        <StatCard icon={Calendar} value={summary?.accuracy || 0} label="Análisis Hoy" />
+        <StatCard icon={Activity} value={summary ? `${Math.round(summary.predictions / (summary.anomalies || 1) * 100)}%` : 'N/A'} label="Tasa de Completitud" />
       </div>
 
       {(analysisChart?.length > 0 || uploadChart?.length > 0) && (
@@ -140,18 +127,13 @@ const Dashboard = (): React.ReactElement => {
             {recentActivity?.map((activity) => (
               <div key={activity.id} className="pb-3 border-b border-gray-200 last:border-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="font-medium text-sm flex-1 truncate">{activity.filename}</p>
-                  <StatusBadge type="classification" value={activity.classification} />
-                  <StatusBadge type="status" value={activity.status} />
+                  <p className="font-medium text-sm flex-1 truncate">{activity.type || 'Actividad'}</p>
+                  <StatusBadge type="classification" value={activity.type || 'unknown'} />
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <span>{formatDate(activity.createdAt)}</span>
-                  {activity.processingTimeSeconds && (
-                    <>
-                      <span>•</span>
-                      <span>{Math.round(activity.processingTimeSeconds)}s procesamiento</span>
-                    </>
-                  )}
+                  <span>{formatDate(activity.timestamp)}</span>
+                  <span>•</span>
+                  <span>{activity.description || 'Sin descripción'}</span>
                 </div>
               </div>
             ))}
