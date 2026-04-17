@@ -1,6 +1,10 @@
 import { Outlet } from 'react-router-dom';
 import { Footer } from './Footer';
 
+interface MainLayoutProps {
+  children?: React.ReactNode;
+}
+
 /**
  * Main Layout component.
  *
@@ -9,8 +13,10 @@ import { Footer } from './Footer';
  * - Main content with padding for fixed header
  * - Dark cyber theme background
  * - Ensures responsive behavior across devices
+ *
+ * Can render children directly or use Outlet for nested routes.
  */
-export function MainLayout(): React.ReactElement {
+export function MainLayout({ children }: MainLayoutProps): React.ReactElement {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-gray-100">
       {/* Fixed Header */}
@@ -19,9 +25,7 @@ export function MainLayout(): React.ReactElement {
       </div>
 
       {/* Main content with padding for fixed header */}
-      <main className="pt-20">
-        <Outlet />
-      </main>
+      <main className="pt-20">{children ?? <Outlet />}</main>
     </div>
   );
 }

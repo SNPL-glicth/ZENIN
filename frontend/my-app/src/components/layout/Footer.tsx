@@ -52,7 +52,7 @@ export function Footer(): React.ReactElement {
               login
             </button>
             <button
-              onClick={() => navigate(getRoutePath('LOGIN'))}
+              onClick={() => navigate(getRoutePath('REGISTER'))}
               className="rounded-md border border-violet-500/30 bg-violet-500/10 px-4 py-2 font-[family-name:var(--font-mono)] text-xs text-violet-400 transition-all duration-200 hover:bg-violet-500/20 hover:text-violet-300 hover:shadow-[0_0_10px_rgba(139,92,246,0.3)]"
             >
               register

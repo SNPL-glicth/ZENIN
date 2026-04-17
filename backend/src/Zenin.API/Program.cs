@@ -66,8 +66,24 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(builder.Configuration["Cors:AllowedOrigins"]!.Split(','))
-              .AllowAnyMethod()
+        var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"];
+        if (!string.IsNullOrEmpty(allowedOrigins))
+        {
+            policy.WithOrigins(allowedOrigins.Split(','));
+        }
+        else
+        {
+            // Development: allow common Vite origins
+            policy.WithOrigins(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "http://127.0.0.1:5173",
+                "http://127.0.0.1:3000",
+                "http://localhost:40679",
+                "http://127.0.0.1:40679"
+            );
+        }
+        policy.AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
     });

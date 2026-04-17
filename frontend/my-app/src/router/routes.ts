@@ -27,6 +27,26 @@ export const ROUTES = {
     path: '/login',
     name: 'Login',
   } as RouteConfig,
+
+  REGISTER: {
+    path: '/register',
+    name: 'Register',
+  } as RouteConfig,
+
+  ADMIN: {
+    path: '/app/admin',
+    name: 'Admin Dashboard',
+  } as RouteConfig,
+
+  CHAT: {
+    path: '/app/admin/chat',
+    name: 'Chat',
+  } as RouteConfig,
+
+  PREDICTIONS: {
+    path: '/app/admin/predictions',
+    name: 'Predictions',
+  } as RouteConfig,
 } as const;
 
 /**

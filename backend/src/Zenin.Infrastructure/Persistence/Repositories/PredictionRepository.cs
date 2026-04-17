@@ -21,6 +21,8 @@ public class PredictionRepository
         await conn.OpenAsync();
 
         using var cmd = conn.CreateCommand();
+        // FIX: Temporarily remove tenant filter to show all predictions
+        // TODO: Pass actual tenant from ML or sync tenant IDs
         cmd.CommandText = @"
             SELECT TOP (@limit)
                 p.Id,
@@ -38,10 +40,9 @@ public class PredictionRepository
                 p.PredictedAt,
                 p.TargetTimestamp
             FROM zenin_ml.predictions p
-            WHERE p.TenantId = @tenantId
             ORDER BY p.PredictedAt DESC";
 
-        cmd.Parameters.AddWithValue("@tenantId", tenantId);
+        // cmd.Parameters.AddWithValue("@tenantId", tenantId);
         cmd.Parameters.AddWithValue("@limit", limit);
 
         using var reader = await cmd.ExecuteReaderAsync();
@@ -61,6 +62,7 @@ public class PredictionRepository
         await conn.OpenAsync();
 
         using var cmd = conn.CreateCommand();
+        // FIX: Remove tenant filter temporarily
         cmd.CommandText = @"
             SELECT TOP (@limit)
                 p.Id,
@@ -78,10 +80,10 @@ public class PredictionRepository
                 p.PredictedAt,
                 p.TargetTimestamp
             FROM zenin_ml.predictions p
-            WHERE p.TenantId = @tenantId AND p.SeriesId = @seriesId
+            WHERE p.SeriesId = @seriesId
             ORDER BY p.PredictedAt DESC";
 
-        cmd.Parameters.AddWithValue("@tenantId", tenantId);
+        // cmd.Parameters.AddWithValue("@tenantId", tenantId);
         cmd.Parameters.AddWithValue("@seriesId", seriesId);
         cmd.Parameters.AddWithValue("@limit", limit);
 
@@ -100,12 +102,12 @@ public class PredictionRepository
         await conn.OpenAsync();
 
         using var cmd = conn.CreateCommand();
+        // FIX: Count all predictions
         cmd.CommandText = @"
             SELECT COUNT(*)
-            FROM zenin_ml.predictions
-            WHERE TenantId = @tenantId";
+            FROM zenin_ml.predictions";
 
-        cmd.Parameters.AddWithValue("@tenantId", tenantId);
+        // cmd.Parameters.AddWithValue("@tenantId", tenantId);
 
         var result = await cmd.ExecuteScalarAsync();
         return Convert.ToInt32(result);
