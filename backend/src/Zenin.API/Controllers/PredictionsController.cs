@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Zenin.Application.Features.Documents.Commands;
 using Zenin.Infrastructure.Persistence.Repositories;
 
 namespace Zenin.API.Controllers;
@@ -81,6 +82,41 @@ public class PredictionsController : ControllerBase
         return Ok(trace);
     }
 
+    /// <summary>
+    /// Delete prediction (soft delete).
+    /// Admin only, tenant-scoped.
+    /// </summary>
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeletePrediction(int id)
+    {
+        var tenantId = GetTenantId();
+        if (tenantId == null) return Unauthorized();
+
+        var deleted = await _predictionRepository.SoftDeleteByIdAsync(id, tenantId.Value);
+        return deleted ? NoContent() : NotFound();
+    }
+
+    /// <summary>
+    /// Bulk delete predictions (soft delete).
+    /// Admin only, tenant-scoped.
+    /// </summary>
+    [HttpDelete("bulk")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> BulkDeletePredictions([FromBody] BulkDeletePredictionsRequest request)
+    {
+        var tenantId = GetTenantId();
+        if (tenantId == null) return Unauthorized();
+
+        var count = await _predictionRepository.BulkSoftDeleteAsync(request.Ids, tenantId.Value);
+        return Ok(new { deletedCount = count });
+    }
+
     private Guid? GetTenantId() =>
         Guid.TryParse(User.FindFirst("tenant_id")?.Value, out var id) ? id : null;
+}
+
+public class BulkDeletePredictionsRequest
+{
+    public List<int> Ids { get; set; } = new();
 }

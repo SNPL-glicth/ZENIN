@@ -18,6 +18,7 @@ public class DocumentDto
     public string ContentType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string? Conclusion { get; set; }
+    public string? MlResult { get; set; }  // JSON completo del análisis ML
     public DateTimeOffset UploadedAt { get; set; }
     public DateTimeOffset? AnalyzedAt { get; set; }
 }

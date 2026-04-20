@@ -3,23 +3,23 @@ import { usePredictions } from '../hooks/usePredictions';
 import type { Prediction } from '../services/predictionService';
 
 /**
- * SeverityBadge - Visual indicator for prediction severity.
+ * SeverityBadge - Visual indicator for document analysis severity.
  */
-function SeverityBadge({ riskLevel, isAnomaly }: { riskLevel: string; isAnomaly: boolean }): React.ReactElement {
-  // Determine severity display
+function SeverityBadge({ severity, actionRequired }: { severity: string; actionRequired: boolean }): React.ReactElement {
+  // Determine severity display based on document analysis
   const getSeverityConfig = () => {
-    const level = riskLevel.toUpperCase();
+    const level = severity?.toLowerCase() || 'info';
     
-    if (level === 'ALERT' || isAnomaly) {
+    if (level === 'critical' || actionRequired) {
       return {
         bg: 'bg-red-950/50',
         border: 'border-red-800',
         text: 'text-red-400',
-        label: 'ALERT',
+        label: 'CRITICAL',
       };
     }
     
-    if (level === 'WARNING' || level === 'WARNING') {
+    if (level === 'warning') {
       return {
         bg: 'bg-amber-950/50',
         border: 'border-amber-800',
@@ -28,12 +28,12 @@ function SeverityBadge({ riskLevel, isAnomaly }: { riskLevel: string; isAnomaly:
       };
     }
     
-    // NORMAL, INFO, or default
+    // info or default
     return {
       bg: 'bg-emerald-950/50',
       border: 'border-emerald-800',
       text: 'text-emerald-400',
-      label: level === 'NONE' ? 'NORMAL' : level,
+      label: 'INFO',
     };
   };
 
@@ -89,8 +89,10 @@ function PredictionCard({ prediction }: { prediction: Prediction }): React.React
     });
   };
 
-  const formatValue = (value: number): string => {
-    return value.toFixed(2);
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
@@ -98,33 +100,38 @@ function PredictionCard({ prediction }: { prediction: Prediction }): React.React
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <SeverityBadge riskLevel={prediction.riskLevel} isAnomaly={prediction.isAnomaly} />
+            <SeverityBadge severity={prediction.severity} actionRequired={prediction.actionRequired} />
             <span className="font-mono text-xs text-gray-500">
-              {prediction.engineName || 'Unknown Engine'}
+              {prediction.classification?.toUpperCase() || 'DOCUMENT'}
             </span>
           </div>
           
-          <p className="font-mono text-sm text-white truncate">
-            Series: {prediction.seriesId.split('-')[0]}...
+          <p className="font-mono text-sm text-white truncate" title={prediction.originalFilename}>
+            {prediction.originalFilename}
           </p>
           
           <div className="mt-2 flex items-center gap-4">
             <div>
-              <span className="font-mono text-xs text-gray-500">Predicted Value</span>
-              <p className="font-mono text-sm text-purple-300">{formatValue(prediction.predictedValue)}</p>
+              <span className="font-mono text-xs text-gray-500">Size</span>
+              <p className="font-mono text-sm text-purple-300">{formatFileSize(prediction.fileSizeBytes)}</p>
             </div>
             
-            {prediction.trend && (
-              <div>
-                <span className="font-mono text-xs text-gray-500">Trend</span>
-                <p className={`font-mono text-sm ${
-                  prediction.trend === 'up' ? 'text-emerald-400' : 
-                  prediction.trend === 'down' ? 'text-red-400' : 'text-gray-400'
-                }`}>
-                  {prediction.trend.toUpperCase()}
-                </p>
-              </div>
-            )}
+            <div>
+              <span className="font-mono text-xs text-gray-500">Sentiment</span>
+              <p className={`font-mono text-sm ${
+                prediction.sentimentLabel === 'positive' ? 'text-emerald-400' : 
+                prediction.sentimentLabel === 'negative' ? 'text-red-400' : 'text-gray-400'
+              }`}>
+                {prediction.sentimentLabel?.toUpperCase() || 'NEUTRAL'}
+              </p>
+            </div>
+            
+            <div>
+              <span className="font-mono text-xs text-gray-500">Urgency</span>
+              <p className="font-mono text-sm text-amber-300">
+                {(prediction.urgencyScore || 0).toFixed(1)}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -133,13 +140,13 @@ function PredictionCard({ prediction }: { prediction: Prediction }): React.React
             {formatDate(prediction.predictedAt)}
           </span>
           
-          {prediction.confidenceScore !== undefined && (
+          {prediction.confidence !== undefined && (
             <div className="w-24">
-              <ConfidenceBar confidence={prediction.confidenceScore} />
+              <ConfidenceBar confidence={prediction.confidence} />
             </div>
           )}
           
-          {prediction.explanation && (
+          {prediction.conclusion && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="font-mono text-xs text-purple-400 hover:text-purple-300 transition-colors"
@@ -150,12 +157,22 @@ function PredictionCard({ prediction }: { prediction: Prediction }): React.React
         </div>
       </div>
 
-      {/* Expanded explanation */}
-      {isExpanded && prediction.explanation && (
+      {/* Expanded conclusion */}
+      {isExpanded && prediction.conclusion && (
         <div className="mt-3 border-t border-gray-800 pt-3">
           <p className="font-mono text-xs text-gray-400 leading-relaxed">
-            {prediction.explanation}
+            {prediction.conclusion}
           </p>
+          {prediction.actions && prediction.actions.length > 0 && (
+            <div className="mt-2">
+              <span className="font-mono text-xs text-gray-500">Acciones recomendadas:</span>
+              <ul className="mt-1 space-y-1">
+                {prediction.actions.map((action, i) => (
+                  <li key={i} className="font-mono text-xs text-gray-400">• {action}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>

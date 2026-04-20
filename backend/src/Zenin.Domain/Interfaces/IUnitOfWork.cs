@@ -10,6 +10,8 @@ public interface IUnitOfWork : IDisposable
     IPredictionRepository Predictions { get; }
     IDocumentRepository Documents { get; }
     IAnalysisResultRepository AnalysisResults { get; }
+    IChatSessionRepository ChatSessions { get; }
+    IChatMessageRepository ChatMessages { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);

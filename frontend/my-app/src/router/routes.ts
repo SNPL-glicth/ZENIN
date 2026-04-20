@@ -43,9 +43,9 @@ export const ROUTES = {
     name: 'Chat',
   } as RouteConfig,
 
-  PREDICTIONS: {
-    path: '/app/admin/predictions',
-    name: 'Predictions',
+  METRICS: {
+    path: '/app/admin/metrics',
+    name: 'Metrics',
   } as RouteConfig,
 } as const;
 

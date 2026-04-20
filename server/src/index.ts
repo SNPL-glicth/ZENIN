@@ -5,6 +5,12 @@ import { createServer } from 'http';
 import { getConnection, closeConnection } from './config/db';
 import { healthCheck } from './api/health';
 import { startMetricsScheduler } from './scheduler/metrics_job';
+import { 
+  getMetricsSummary, 
+  getMetricsTimeline, 
+  getTopDocuments, 
+  getDomainMetrics 
+} from './api/metrics';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '4423');
@@ -86,6 +92,12 @@ function broadcastCognitiveDiagnostic(data: any): void {
 
 // Health check endpoint (internal use only)
 app.get('/health', healthCheck);
+
+// Metrics endpoints
+app.get('/metrics/summary', getMetricsSummary);
+app.get('/metrics/timeline', getMetricsTimeline);
+app.get('/metrics/top-documents', getTopDocuments);
+app.get('/metrics/domains', getDomainMetrics);
 
 // Endpoint to receive cognitive diagnostic from ML Service
 app.post('/relay/cognitive-diagnostic', (req, res) => {

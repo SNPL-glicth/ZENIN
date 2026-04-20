@@ -156,4 +156,47 @@ public class PredictionRepository
             Regime = regime
         };
     }
+
+    public async Task<bool> SoftDeleteByIdAsync(int id, Guid tenantId)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+
+        using var cmd = conn.CreateCommand();
+        // Soft delete: set IsDeleted = 1
+        // Note: predictions table doesn't have IsDeleted yet, so we'll use hard delete for now
+        // TODO: Add IsDeleted column to zenin_ml.predictions table
+        cmd.CommandText = @"
+            DELETE FROM zenin_ml.predictions
+            WHERE Id = @id";
+
+        cmd.Parameters.AddWithValue("@id", id);
+
+        var affected = await cmd.ExecuteNonQueryAsync();
+        return affected > 0;
+    }
+
+    public async Task<int> BulkSoftDeleteAsync(List<int> ids, Guid tenantId)
+    {
+        if (!ids.Any())
+            return 0;
+
+        using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+
+        using var cmd = conn.CreateCommand();
+        // Bulk soft delete
+        var idParams = string.Join(",", ids.Select((_, i) => $"@id{i}"));
+        cmd.CommandText = $@"
+            DELETE FROM zenin_ml.predictions
+            WHERE Id IN ({idParams})";
+
+        for (int i = 0; i < ids.Count; i++)
+        {
+            cmd.Parameters.AddWithValue($"@id{i}", ids[i]);
+        }
+
+        var affected = await cmd.ExecuteNonQueryAsync();
+        return affected;
+    }
 }

@@ -7,7 +7,7 @@ import { Sidebar } from './Sidebar';
  *
  * Provides consistent navigation and structure for:
  * - Chat interface (/app/admin/chat)
- * - Predictions dashboard (/app/admin/predictions)
+ * - Metrics & Analytics dashboard (/app/admin/metrics)
  *
  * Features:
  * - Sidebar always visible (push-based, not overlay)

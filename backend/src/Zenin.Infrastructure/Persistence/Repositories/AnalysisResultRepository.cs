@@ -19,4 +19,38 @@ public class AnalysisResultRepository : Repository<AnalysisResult>, IAnalysisRes
             .Take(pageSize)
             .ToListAsync(ct);
     }
+
+    public async Task<bool> SoftDeleteByIdAsync(Guid id, Guid tenantId, CancellationToken ct = default)
+    {
+        var entity = await _dbSet
+            .Where(a => a.Id == id && a.TenantId == tenantId && !a.IsDeleted)
+            .FirstOrDefaultAsync(ct);
+
+        if (entity == null)
+            return false;
+
+        entity.IsDeleted = true;
+        entity.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<int> BulkSoftDeleteAsync(List<Guid> ids, Guid tenantId, CancellationToken ct = default)
+    {
+        var entities = await _dbSet
+            .Where(a => ids.Contains(a.Id) && a.TenantId == tenantId && !a.IsDeleted)
+            .ToListAsync(ct);
+
+        if (!entities.Any())
+            return 0;
+
+        foreach (var entity in entities)
+        {
+            entity.IsDeleted = true;
+            entity.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync(ct);
+        return entities.Count;
+    }
 }

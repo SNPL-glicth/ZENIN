@@ -30,6 +30,7 @@ public class ListDocumentsQueryHandler : IRequestHandler<ListDocumentsQuery, Lis
             ContentType = d.ContentType,
             Status = d.Status,
             Conclusion = d.Conclusion,
+            MlResult = d.MlResult,  // Exponer JSON del análisis ML al frontend
             UploadedAt = d.UploadedAt,
             AnalyzedAt = d.AnalyzedAt
         }).ToList();

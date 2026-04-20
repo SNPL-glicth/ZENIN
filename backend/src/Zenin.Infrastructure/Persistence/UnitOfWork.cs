@@ -19,6 +19,8 @@ public class UnitOfWork : IUnitOfWork
     private IAnalysisResultRepository? _analysisResultRepository;
     private PredictionRepository? _predictionRepository;
     private MLHealthRepository? _mlHealthRepository;
+    private IChatSessionRepository? _chatSessionRepository;
+    private IChatMessageRepository? _chatMessageRepository;
 
     public UnitOfWork(ApplicationDbContext context, IConfiguration configuration)
     {
@@ -32,6 +34,8 @@ public class UnitOfWork : IUnitOfWork
     public IPatternRepository Patterns => _patternRepository ??= new PatternRepository(_context);
     public IDocumentRepository Documents => _documentRepository ??= new DocumentRepository(_context);
     public IAnalysisResultRepository AnalysisResults => _analysisResultRepository ??= new AnalysisResultRepository(_context);
+    public IChatSessionRepository ChatSessions => _chatSessionRepository ??= new ChatSessionRepository(_context);
+    public IChatMessageRepository ChatMessages => _chatMessageRepository ??= new ChatMessageRepository(_context);
     
     // New repositories using IConfiguration
     public PredictionRepository Predictions => _predictionRepository ??= new PredictionRepository(_configuration);

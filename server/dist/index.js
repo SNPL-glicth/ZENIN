@@ -9,6 +9,7 @@ const ws_1 = require("ws");
 const db_1 = require("./config/db");
 const health_1 = require("./api/health");
 const metrics_job_1 = require("./scheduler/metrics_job");
+const metrics_1 = require("./api/metrics");
 const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || '4423');
 const WS_PORT = parseInt(process.env.WS_PORT || '4424');
@@ -27,6 +28,24 @@ const clients = new Set();
 wss.on('connection', (ws) => {
     console.log('[WebSocket] Client connected');
     clients.add(ws);
+    // Heartbeat mechanism to keep connection alive
+    let isAlive = true;
+    const pingInterval = setInterval(() => {
+        if (!isAlive) {
+            console.log('[WebSocket] Client inactive, terminating connection');
+            clearInterval(pingInterval);
+            ws.terminate();
+            clients.delete(ws);
+            return;
+        }
+        isAlive = false;
+        if (ws.readyState === ws_1.WebSocket.OPEN) {
+            ws.ping();
+        }
+    }, 30000); // Ping every 30 seconds
+    ws.on('pong', () => {
+        isAlive = true;
+    });
     // Send initial connection confirmation
     ws.send(JSON.stringify({
         type: 'connection',
@@ -35,10 +54,12 @@ wss.on('connection', (ws) => {
     }));
     ws.on('close', () => {
         console.log('[WebSocket] Client disconnected');
+        clearInterval(pingInterval);
         clients.delete(ws);
     });
     ws.on('error', (error) => {
         console.error('[WebSocket] Error:', error);
+        clearInterval(pingInterval);
         clients.delete(ws);
     });
 });
@@ -57,6 +78,11 @@ function broadcastCognitiveDiagnostic(data) {
 }
 // Health check endpoint (internal use only)
 app.get('/health', health_1.healthCheck);
+// Metrics endpoints
+app.get('/metrics/summary', metrics_1.getMetricsSummary);
+app.get('/metrics/timeline', metrics_1.getMetricsTimeline);
+app.get('/metrics/top-documents', metrics_1.getTopDocuments);
+app.get('/metrics/domains', metrics_1.getDomainMetrics);
 // Endpoint to receive cognitive diagnostic from ML Service
 app.post('/relay/cognitive-diagnostic', (req, res) => {
     try {

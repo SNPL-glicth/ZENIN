@@ -11,10 +11,10 @@
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.AssemblyInfoInputs.cache
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.AssemblyInfo.cs
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.csproj.CoreCompileInputs.cache
+/home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.sourcelink.json
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.In.A23B0099.Up2Date
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.dll
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/refint/Zenin.Infrastructure.dll
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.pdb
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.genruntimeconfig.cache
 /home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/ref/Zenin.Infrastructure.dll
-/home/nicolas/Documentos/Iot_System/ZENIN/backend/src/Zenin.Infrastructure/obj/Debug/net8.0/Zenin.Infrastructure.sourcelink.json

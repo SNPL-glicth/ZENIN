@@ -14,8 +14,8 @@ export function AdminHome(): React.ReactElement {
     navigate(getRoutePath('CHAT'));
   };
 
-  const handleViewPredictions = (): void => {
-    navigate(getRoutePath('PREDICTIONS'));
+  const handleViewMetrics = (): void => {
+    navigate(getRoutePath('METRICS'));
   };
 
   return (
@@ -47,19 +47,19 @@ export function AdminHome(): React.ReactElement {
           </div>
         </button>
 
-        {/* Predictions Card */}
+        {/* Metrics Card */}
         <button
-          onClick={handleViewPredictions}
+          onClick={handleViewMetrics}
           className="group flex flex-col items-center rounded-lg border border-gray-800 bg-gray-900/50 p-8 text-center transition-all hover:border-emerald-700 hover:bg-gray-800"
         >
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-900/30 transition-colors group-hover:bg-emerald-900/50">
             <svg className="h-8 w-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <h2 className="mb-2 text-xl font-semibold text-white">Predictions</h2>
+          <h2 className="mb-2 text-xl font-semibold text-white">Métricas</h2>
           <p className="font-mono text-sm text-gray-500">
-            View AI-generated predictions
+            View analytics and metrics
           </p>
           <div className="mt-4 font-mono text-xs text-emerald-400">
             {'>'} View Predictions

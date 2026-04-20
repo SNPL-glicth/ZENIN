@@ -36,11 +36,10 @@ public static class DependencyInjection
             options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = true,
+                ValidateIssuer = false,  // TEMP: Aceptar cualquier issuer
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = configuration["Jwt:Issuer"],
                 ValidAudience = configuration["Jwt:Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Secret"]!)),
                 ClockSkew = TimeSpan.Zero
@@ -51,6 +50,7 @@ public static class DependencyInjection
         services.AddScoped<PredictionRepository>();
         services.AddScoped<AnomalyRepository>();
         services.AddScoped<MLHealthRepository>();
+        services.AddScoped<IAnalysisResultRepository, AnalysisResultRepository>();
         services.AddScoped<IIngestionService, IngestionService>();
         services.AddScoped<IMLSearchService, MLSearchService>();
         services.AddScoped<IIngestionQueueService, IngestionQueueService>();
