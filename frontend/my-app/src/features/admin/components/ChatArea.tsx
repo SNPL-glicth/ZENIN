@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { MessageBubble } from './MessageBubble';
 import { FileUploadButton } from './FileUploadButton';
-import { useChatSession } from '../hooks/useChatSession';
+import type { UseChatSessionReturn } from '../hooks/useChatSession';
 
 /**
  * AnimatedDots - Blinking dots for loading states.
@@ -19,34 +20,19 @@ function AnimatedDots({ text = 'processing' }: { text?: string }): React.ReactEl
   );
 }
 
-interface ChatAreaProps {
-  /** Current active session ID - REQUIRED for operation */
-  sessionId: string | null;
-  /** Callback when document upload completes successfully */
-  onDocumentUploaded?: () => void;
-  /** Callback when session changes (for parent sync) */
-  onSessionChange?: (sessionId: string | null) => void;
-}
-
 /**
- * ChatArea - Pure chat interface component (NO sidebar).
+ * ChatArea - Pure chat interface component using shared context.
  * 
  * This component:
- * - ONLY displays chat messages for the given sessionId
+ * - Gets session state from useOutletContext (provided by AdminLayout)
  * - DOES NOT manage sidebar or session selection
- * - REQUIRES sessionId to be provided by parent component
- * - ALL state synchronization happens via backend API
+ * - ALL state synchronization happens via shared hook
  * - NO localStorage usage for messages
- * 
- * @param sessionId - Required session ID to load/send messages
- * @param onDocumentUploaded - Optional callback when file upload completes
  */
-export function ChatArea({ 
-  sessionId, 
-  onDocumentUploaded,
-  onSessionChange 
-}: ChatAreaProps): React.ReactElement {
+export function ChatArea(): React.ReactElement {
+  // Get shared session state from context
   const { 
+    activeSessionId,
     messages, 
     isLoading, 
     error, 
@@ -58,57 +44,98 @@ export function ChatArea({
     clearMessages, 
     clearError, 
     messagesEndRef 
-  } = useChatSession();
+  } = useOutletContext<UseChatSessionReturn>();
   
   const [input, setInput] = useState('');
   const [processingFile, setProcessingFile] = useState<string | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(false);
+  const isSendingRef = useRef(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldScrollRef = useRef(true);
+  const lastLoadedSessionRef = useRef<string | null>(null);
 
-  // Load messages when sessionId changes
+  // Load messages when activeSessionId changes
   useEffect(() => {
-    if (sessionId) {
+    // Only load if we have a session and it's different from last loaded
+    if (activeSessionId && activeSessionId !== lastLoadedSessionRef.current) {
+      lastLoadedSessionRef.current = activeSessionId;
+      
+      // Reset states when session changes
+      setInput('');
+      setProcessingFile(null);
+      clearError();
+      shouldScrollRef.current = true;
+      
       setIsLoadingSession(true);
-      loadSessionMessages(sessionId)
+      loadSessionMessages()
         .finally(() => setIsLoadingSession(false));
-    } else {
+    } else if (!activeSessionId) {
+      // No active session - clear everything
+      lastLoadedSessionRef.current = null;
       clearMessages();
+      clearError();
     }
-  }, [sessionId, loadSessionMessages, clearMessages]);
+    
+    // Cleanup: mark any ongoing send as stale
+    return () => {
+      isSendingRef.current = false;
+    };
+  }, [activeSessionId]); // Only depend on activeSessionId
 
-  // Notify parent of session changes
-  useEffect(() => {
-    onSessionChange?.(sessionId);
-  }, [sessionId, onSessionChange]);
+  // Check if user is near bottom before auto-scrolling
+  const isNearBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+    const threshold = 100; // pixels from bottom
+    return container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
+  };
 
-  // Auto-scroll to bottom on new messages
+  // Handle scroll to track user position
+  const handleScroll = () => {
+    shouldScrollRef.current = isNearBottom();
+  };
+
+  // Auto-scroll to bottom on new messages (only if user is near bottom)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (shouldScrollRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, messagesEndRef]);
 
   const displayValue = pendingFile ? `[${pendingFile.name}] ${input}` : input;
-  const canSend = !!sessionId && (input.trim() || pendingFile) && !isLoading;
+  const canSend = !!activeSessionId && (input.trim() || pendingFile) && !isLoading;
 
   const handleSend = async (): Promise<void> => {
-    if (!canSend || !sessionId) return;
+    if (!canSend || !activeSessionId || isSendingRef.current) return;
+    
+    isSendingRef.current = true;
 
     if (pendingFile) {
       setProcessingFile(pendingFile.name);
       try {
-        await sendWithFile(input, pendingFile, sessionId);
-        onDocumentUploaded?.();
+        await sendWithFile(input, pendingFile);
       } finally {
         setProcessingFile(null);
+        isSendingRef.current = false;
       }
     } else {
-      await sendText(input, sessionId);
+      try {
+        await sendText(input);
+      } finally {
+        isSendingRef.current = false;
+      }
     }
     setInput('');
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent): void => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    } else if (e.key === 'Enter' && e.shiftKey) {
+      // Allow shift+enter to insert newline
+      e.preventDefault();
+      setInput((prev) => prev + '\n');
     }
   };
 
@@ -134,25 +161,50 @@ export function ChatArea({
     }
   };
 
-  // Show loading state when switching sessions
+  // Skeleton Loading Component
+  const MessageSkeleton = () => (
+    <div className="flex w-full animate-pulse space-x-3">
+      <div className="h-8 w-8 rounded-full bg-gray-700" />
+      <div className="flex-1 space-y-2">
+        <div className="h-4 w-1/4 rounded bg-gray-700" />
+        <div className="h-16 w-3/4 rounded bg-gray-700" />
+      </div>
+    </div>
+  );
+
+  // Show loading state when switching sessions (skeleton)
   if (isLoadingSession) {
     return (
       <div className="flex h-full flex-col rounded-lg border border-gray-800 bg-gray-900/50">
-        <div className="flex flex-1 items-center justify-center">
-          <AnimatedDots text="cargando sesión" />
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+            <span className="font-mono text-sm text-emerald-500">SYSTEM ONLINE</span>
+          </div>
+          <span className="font-mono text-xs text-gray-500">ZENIN COGNITIVE INTERFACE</span>
+        </div>
+        {/* Skeleton Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <MessageSkeleton />
+          <MessageSkeleton />
+          <MessageSkeleton />
         </div>
       </div>
     );
   }
 
   // Show empty state when no session selected
-  if (!sessionId) {
+  if (!activeSessionId) {
     return (
       <div className="flex h-full flex-col rounded-lg border border-gray-800 bg-gray-900/50">
         <div className="flex flex-1 items-center justify-center text-gray-500">
           <div className="text-center">
-            <p className="font-mono text-sm">{'>'} selecciona un chat</p>
-            <p className="mt-2 text-xs">O crea uno nuevo desde el sidebar</p>
+            <svg className="mx-auto mb-4 h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <p className="font-mono text-lg text-gray-400">Ninguna conversación seleccionada</p>
+            <p className="mt-2 text-sm text-gray-600">Selecciona un chat del sidebar o crea uno nuevo</p>
           </div>
         </div>
       </div>
@@ -171,12 +223,19 @@ export function ChatArea({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 && (
+      <div 
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+      >
+        {messages.length === 0 && !isLoading && !error && (
           <div className="flex h-full items-center justify-center text-gray-500">
             <div className="text-center">
-              <p className="font-mono text-sm">{'>'} inicializando interfaz cognitiva...</p>
-              <p className="mt-2 text-xs">Envía un mensaje o adjunta un documento</p>
+              <svg className="mx-auto mb-4 h-10 w-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+              <p className="font-mono text-lg text-gray-400">Sin mensajes aún</p>
+              <p className="mt-2 text-sm text-gray-600">Envía un mensaje o adjunta un documento para empezar</p>
             </div>
           </div>
         )}
@@ -204,19 +263,31 @@ export function ChatArea({
         )}
 
         {error && (
-          <div className="rounded-lg border border-red-900/50 bg-red-950/20 p-3">
-            <div className="flex items-start gap-2">
+          <div className="rounded-lg border border-red-900/50 bg-red-950/20 p-4">
+            <div className="flex items-start gap-3">
               <svg className="h-5 w-5 flex-shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div className="flex-1">
-                <p className="font-mono text-sm text-red-400">ERROR: {error}</p>
-                <button
-                  onClick={clearError}
-                  className="mt-2 font-mono text-xs text-red-500 hover:text-red-400"
-                >
-                  [dismiss]
-                </button>
+                <p className="font-mono text-sm font-medium text-red-400">Error al cargar mensajes</p>
+                <p className="mt-1 font-mono text-xs text-red-300/70">{error}</p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => {
+                      clearError();
+                      loadSessionMessages();
+                    }}
+                    className="rounded bg-red-900/50 px-3 py-1.5 font-mono text-xs text-red-400 transition-colors hover:bg-red-800/50"
+                  >
+                    Reintentar
+                  </button>
+                  <button
+                    onClick={clearError}
+                    className="rounded border border-red-900/50 px-3 py-1.5 font-mono text-xs text-red-400/70 transition-colors hover:bg-red-950/30"
+                  >
+                    Cerrar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -245,8 +316,8 @@ export function ChatArea({
             value={displayValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder={!sessionId ? '> selecciona un chat...' : isLoading ? 'Procesando...' : '> type your message...'}
-            disabled={isLoading || !sessionId}
+            placeholder={!activeSessionId ? 'Selecciona una conversación...' : isLoading ? 'Procesando...' : 'Escribe un mensaje... (Shift+Enter para nueva línea)'}
+            disabled={isLoading || !activeSessionId}
             className="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 font-mono text-sm text-gray-300 placeholder-gray-500 focus:border-emerald-500 focus:outline-none disabled:opacity-50"
           />
           <button
