@@ -57,13 +57,17 @@ public class QueryCommandHandler : IRequestHandler<QueryCommand, Result<QueryRes
         _logger.LogInformation("NLU: intent={Intent} confidence={Confidence:F2}",
             intent.Type, intent.Confidence);
 
-        // 2. Check Redis cache for identical recent query
-        var cacheKey = $"query:{request.TenantId}:{request.Question.GetHashCode():X}";
-        var cached = await _cache.GetAsync<QueryResponse>(cacheKey, ct);
-        if (cached != null)
+        // 2. Check Redis cache for identical recent query (if enabled)
+        var cacheEnabled = _configuration.GetValue<bool>("CHAT_CACHE_ENABLED", false);
+        if (cacheEnabled)
         {
-            _logger.LogDebug("Query cache hit: key={Key}", cacheKey);
-            return Result<QueryResponse>.Success(cached);
+            var cacheKey = $"query:{request.TenantId}:{request.Question.GetHashCode():X}";
+            var cached = await _cache.GetAsync<QueryResponse>(cacheKey, ct);
+            if (cached != null)
+            {
+                _logger.LogDebug("Query cache hit: key={Key}", cacheKey);
+                return Result<QueryResponse>.Success(cached);
+            }
         }
 
         // 3. Try ML Service first — it is the ONLY brain
@@ -72,15 +76,21 @@ public class QueryCommandHandler : IRequestHandler<QueryCommand, Result<QueryRes
         if (mlAnswer != null)
         {
             _logger.LogInformation("Query answered by ML Service: intent={Intent}", intent.Type);
-            await _cache.SetAsync(cacheKey, mlAnswer, TimeSpan.FromMinutes(5), ct);
+            
+            // Solo cachear si está habilitado
+            if (cacheEnabled)
+            {
+                var cacheKey = $"query:{request.TenantId}:{request.Question.GetHashCode():X}";
+                await _cache.SetAsync(cacheKey, mlAnswer, TimeSpan.FromMinutes(5), ct);
+            }
+            
             return Result<QueryResponse>.Success(mlAnswer);
         }
 
-        // 4. ML unavailable — fallback to reading pre-computed results from DB
-        _logger.LogWarning("ML Service unavailable, falling back to DB results");
-        var fallback = await ReadFromDatabaseAsync(request, intent, ct);
-
-        return Result<QueryResponse>.Success(fallback);
+        // 4. ML unavailable — return error instead of stale fallback
+        _logger.LogError("ML Service unavailable for query: {Question}", request.Question);
+        return Result<QueryResponse>.Failure(
+            "No pude procesar tu mensaje. El servicio de ML no está disponible. Intenta de nuevo en unos momentos.");
     }
 
     /// <summary>
@@ -116,15 +126,14 @@ public class QueryCommandHandler : IRequestHandler<QueryCommand, Result<QueryRes
                 })
                 .ToList();
 
+            // Nuevo formato /ml/query con session_id para contexto
+            var sessionId = Guid.NewGuid().ToString(); // Generar session temporal por query
             var payload = new
             {
-                question = request.Question,
+                session_id = sessionId,
+                message = request.Question,
                 tenant_id = request.TenantId.ToString(),
-                intent = intent.Type.ToString(),
-                confidence = intent.Confidence,
-                keywords = intent.Keywords,
-                parameters = intent.ExtractedParameters,
-                analysis_results = analysisResults
+                include_context = false
             };
 
             var response = await _httpClient.PostAsJsonAsync(
@@ -134,12 +143,17 @@ public class QueryCommandHandler : IRequestHandler<QueryCommand, Result<QueryRes
 
             var mlResponse = await response.Content.ReadFromJsonAsync<JsonElement>(cts.Token);
 
+            // Leer campos del nuevo formato QueryResponse
+            var responseText = mlResponse.TryGetProperty("response_text", out var rt) 
+                ? rt.GetString() ?? "" 
+                : "";
+            
             return new QueryResponse
             {
                 Question = request.Question,
-                Answer = mlResponse.TryGetProperty("answer", out var ans) ? ans.GetString() ?? "" : "",
-                Sources = ExtractSources(mlResponse),
-                Data = mlResponse.TryGetProperty("data", out var data) ? data.Deserialize<object>() : null
+                Answer = responseText,
+                Sources = new List<QuerySource>(), // Simplified - no sources in new format
+                Data = mlResponse.TryGetProperty("metadata", out var meta) ? meta.Deserialize<object>() : null
             };
         }
         catch (Exception ex) when (ex is TaskCanceledException or HttpRequestException)
