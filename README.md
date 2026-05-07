@@ -104,6 +104,11 @@ ZENIN/
 │   ├── Dockerfile
 │   └── nginx.conf
 │
+├── server/                    # Metrics Server (Node.js + LTTB downsampling)
+│   ├── src/                   # Background metrics processor
+│   ├── package.json
+│   └── Dockerfile
+│
 └── scripts/
     ├── migrate_sensor_mapping.py
     └── validate_dual_write.py

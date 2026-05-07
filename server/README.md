@@ -1,6 +1,8 @@
 # ZENIN Metrics Server
 
-Background metrics processor for ZENIN using LTTB (Largest-Triangle-Three-Buckets) downsampling algorithm.
+Background metrics processor for the ZENIN platform using LTTB (Largest-Triangle-Three-Buckets) downsampling algorithm.
+
+Part of the ZENIN ecosystem: Frontend (React) → .NET Backend → Metrics Server (this service) → SQL Server.
 
 ## Architecture
 

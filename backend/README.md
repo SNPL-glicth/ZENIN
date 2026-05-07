@@ -1,6 +1,6 @@
 # Zenin Backend API
 
-ASP.NET Core 8 Web API with Clean Architecture, PostgreSQL, Redis, and JWT Authentication.
+ASP.NET Core 8 Web API with Clean Architecture, SQL Server, Redis, and JWT Authentication.
 
 ## Architecture
 
@@ -14,7 +14,7 @@ ASP.NET Core 8 Web API with Clean Architecture, PostgreSQL, Redis, and JWT Authe
 ## Features
 
 - ✅ Clean Architecture (Domain, Application, Infrastructure, API)
-- ✅ PostgreSQL with Entity Framework Core
+- ✅ SQL Server with Entity Framework Core (schemas: `zenin_core`, `zenin_ts`, `zenin_ml`, `zenin_docs`, `zenin_audit`)
 - ✅ Redis for caching and real-time events
 - ✅ JWT Authentication with refresh tokens
 - ✅ ISO 27001 compliance (audit logs, security headers)
@@ -28,7 +28,7 @@ ASP.NET Core 8 Web API with Clean Architecture, PostgreSQL, Redis, and JWT Authe
 ## Prerequisites
 
 - .NET 8 SDK
-- PostgreSQL 16
+- SQL Server (local or Docker, port 1434)
 - Redis 7
 - Docker (optional)
 
@@ -49,7 +49,8 @@ ASP.NET Core 8 Web API with Clean Architecture, PostgreSQL, Redis, and JWT Authe
 
 3. **Start dependencies:**
    ```bash
-   docker-compose up postgres redis -d
+   docker run -d -p 1434:1434 -e SA_PASSWORD=YourPassword123 -e ACCEPT_EULA=Y mcr.microsoft.com/mssql/server:2022-latest
+docker run -d -p 6379:6379 redis:7-alpine
    ```
 
 4. **Run migrations:**
@@ -104,6 +105,16 @@ backend/
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login and get JWT tokens
 
+### Ingest
+- `POST /api/ingest/upload` - Upload file (parse + enqueue async)
+- `GET /api/ingest/analysis/{id}` - Poll ML analysis result (tenant-isolated)
+
+### Query
+- `POST /api/query` - Semantic question → relay to ML Service `/ml/query`
+
+### Dashboard
+- `GET /api/dashboard/overview` - Stats: series, anomalies, patterns, predictions
+
 ### Health
 - `GET /health` - Health check status
 
@@ -140,7 +151,8 @@ backend/
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `ConnectionStrings__DefaultConnection` | PostgreSQL connection | See appsettings.json |
+| `ConnectionStrings__DefaultConnection` | SQL Server connection | (required) |
+| `MLService__BaseUrl` | ML Service URL | http://localhost:8002 |
 | `ConnectionStrings__Redis` | Redis connection | localhost:6379 |
 | `Jwt__Secret` | JWT signing key | (required) |
 | `Jwt__Issuer` | JWT issuer | ZeninAPI |
