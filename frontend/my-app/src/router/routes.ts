@@ -47,6 +47,11 @@ export const ROUTES = {
     path: '/app/admin/metrics',
     name: 'Metrics',
   } as RouteConfig,
+
+  DEMO: {
+    path: '/demo',
+    name: 'Mobile Demo',
+  } as RouteConfig,
 } as const;
 
 /**

@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { MainLayout } from '../components/layout/MainLayout';
 import { HomePage } from '../features/home/components/HomePage';
+import { DownloadPage } from '../features/home/pages/DownloadPage';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { AdminDashboard } from '../features/admin/pages/AdminDashboard';
@@ -51,6 +52,7 @@ export function AppRouter(): React.ReactElement {
       <Routes>
         {/* Public routes with MainLayout (includes Footer) */}
         <Route element={<MainLayout />}>
+          <Route path={ROUTES.DEMO.path} element={<DownloadPage />} />
           <Route path={ROUTES.HOME.path} element={<HomePage />} />
         </Route>
 

@@ -1,4 +1,9 @@
+import { useNavigate } from 'react-router-dom';
+import { getRoutePath } from '../../../router/routes';
+
 export function HeroSection(): React.ReactElement {
+  const navigate = useNavigate();
+
   const scrollToSection = (id: string): void => {
     const element = document.getElementById(id);
     if (element) {
@@ -55,9 +60,9 @@ export function HeroSection(): React.ReactElement {
           </button>
           <button
             className="btn-secondary btn-accent"
-            onClick={() => scrollToSection('download')}
+            onClick={() => navigate(getRoutePath('DEMO'))}
           >
-            Descarga la App
+            Download Mobile Demo
           </button>
         </div>
 
