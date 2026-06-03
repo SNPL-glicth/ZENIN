@@ -411,3 +411,154 @@
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* DownloadSection - APK demo download area */
+.download-section {
+  position: relative;
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #030308;
+  overflow: hidden;
+  text-align: center;
+  padding: 4rem 1.5rem;
+  border-top: 1px solid rgba(109,40,255,0.15);
+}
+
+.download-grid-floor {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 140%;
+  height: 55%;
+  background:
+    linear-gradient(rgba(109,40,255,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(109,40,255,0.08) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform-origin: bottom center;
+  transform: translateX(-50%) perspective(600px) rotateX(55deg);
+  mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 80%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 80%);
+}
+
+.download-grid-ceil {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 140%;
+  height: 35%;
+  background:
+    linear-gradient(rgba(109,40,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(109,40,255,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform-origin: top center;
+  transform: translateX(-50%) perspective(600px) rotateX(-50deg);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 80%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 80%);
+}
+
+.orb-download-left {
+  width: 400px; height: 400px;
+  left: -100px; top: 15%;
+  background: radial-gradient(circle, rgba(56,189,248,0.12) 0%, transparent 70%);
+  animation: orbPulse 9s ease-in-out infinite;
+}
+.orb-download-right {
+  width: 350px; height: 350px;
+  right: -80px; bottom: 20%;
+  background: radial-gradient(circle, rgba(109,40,255,0.14) 0%, transparent 70%);
+  animation: orbPulse 11s ease-in-out infinite reverse;
+}
+
+.download-content {
+  position: relative;
+  z-index: 10;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.download-title {
+  font-size: clamp(48px, 10vw, 100px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.8s ease 0.25s both;
+  position: relative;
+}
+.download-title .main-word {
+  display: block;
+  background: linear-gradient(135deg, #ffffff 30%, rgba(255,255,255,0.55) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+}
+.download-title .main-word::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 4px; left: 3px;
+  background: linear-gradient(135deg, rgba(56,189,248,0.45) 0%, rgba(109,40,255,0.25) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  z-index: -1;
+  filter: blur(1px);
+}
+.download-title .main-word::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 7px; left: 6px;
+  background: rgba(56,189,248,0.12);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  z-index: -2;
+  filter: blur(2px);
+}
+
+.download-sub {
+  font-size: clamp(16px, 2.5vw, 20px);
+  font-weight: 300;
+  color: rgba(220,215,255,0.7);
+  max-width: 540px;
+  margin: 0 auto 1rem;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  animation: fadeUp 0.8s ease 0.4s both;
+}
+
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  animation: fadeUp 0.8s ease 0.6s both;
+}
+
+.btn-accent {
+  border-color: rgba(109,40,255,0.35);
+  color: rgba(180,160,255,0.9);
+  animation: fadeUp 0.8s ease 0.65s both;
+}
+.btn-accent:hover {
+  border-color: rgba(109,40,255,0.7);
+  color: #fff;
+  background: rgba(109,40,255,0.12);
+}
+
+.download-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(150,140,200,0.45);
+  letter-spacing: 0.06em;
+  margin-top: 12px;
+  animation: fadeUp 0.8s ease 0.7s both;
+}

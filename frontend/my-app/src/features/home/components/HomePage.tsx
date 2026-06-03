@@ -1,4 +1,5 @@
 import { CTASection } from './CTASection';
+import { DownloadSection } from './DownloadSection';
 import { FeaturesSection } from './FeaturesSection';
 import { HeroSection } from './HeroSection';
 import { HowItWorksSection } from './HowItWorksSection';
@@ -12,7 +13,8 @@ import { PreviewSection } from './PreviewSection';
  * 2. FeaturesSection - Key capabilities
  * 3. HowItWorksSection - Platform flow
  * 4. PreviewSection - Dashboard preview
- * 5. CTASection - Final conversion
+ * 5. DownloadSection - Mobile demo APK
+ * 6. CTASection - Final conversion
  *
  * All sections are self-contained and independently maintainable.
  */
@@ -23,6 +25,7 @@ export function HomePage(): React.ReactElement {
       <FeaturesSection />
       <HowItWorksSection />
       <PreviewSection />
+      <DownloadSection />
       <CTASection />
     </>
   );

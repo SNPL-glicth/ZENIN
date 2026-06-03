@@ -53,6 +53,12 @@ export function HeroSection(): React.ReactElement {
           >
             How It Works
           </button>
+          <button
+            className="btn-secondary btn-accent"
+            onClick={() => scrollToSection('download')}
+          >
+            Descarga la App
+          </button>
         </div>
 
         {/* Stats row */}

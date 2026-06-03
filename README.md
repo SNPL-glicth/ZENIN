@@ -6,7 +6,7 @@ Plataforma SaaS de análisis de datos con ingesta asíncrona, ML y dashboards un
 
 ---
 
-## Arquitectura
+## Arquitecturazzzzz
 
 ### Flujo de ingesta (async, desacoplado)
 
